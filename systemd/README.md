@@ -55,6 +55,7 @@ ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-systemd-source-hardening.p
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-status-source-hardening.py --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-healthcheck-source-hardening.py --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-operational-wrapper-source-hardening.py --summary
+ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-script-permission-policy.py --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-python-syntax.sh --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-shell-syntax.sh --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-guard-coverage.py --summary
@@ -113,6 +114,16 @@ Privilegienrisiko ist der erwartete Marker
 `privilege_risk_review_status=accepted_risk` plus `critical_privilege_risk=1`.
 Er liest keine
 sudoers-Inhalte und aendert keine sudoers-Konfiguration.
+
+Nach Aenderungen an der Projekt-Healthcheck-Unit wird die installierte Unit-Datei
+per `scripts/check-systemd-units.sh --summary` gegen die Projektquelle abgeglichen
+und mit `systemctl daemon-reload` neu eingelesen. Der Healthcheck-Service ist eine
+`Type=oneshot`-Unit; es gibt keinen dauerhaft laufenden Prozess, der neu gestartet
+werden muesste. Ein expliziter `systemctl restart br-wissen-healthcheck.service`
+wuerde den kompletten Healthcheck sofort ausloesen und ist deshalb nicht Teil der
+metadata-only Permission-Policy-Haertung, solange kein gesonderter Runtime-Anlass
+besteht. Der naechste Timer- oder manuelle Healthcheck nutzt die neu geladene
+ExecStartPre-Kette.
 Der Privilege-Least-Privilege-Plan-Guard schlaegt fehl, wenn kein konkreter
 Least-Privilege-Folgeplan in `docs/PRIVILEGE-LEAST-PRIVILEGE-PLAN.md`, kein
 `target_due`, kein Lockout-/Rollback-/visudo-/Backup-/Inventar-/Staged-Rollout-
@@ -202,6 +213,9 @@ Readiness-Doku-, Python-/Shell-Syntax-, Systemd-Unit- oder Doku-Source-
 Guardquellen erkennt oder
 wenn der Doku-Source-Hardening-Guard unerwartete Aenderungen an README-,
 Runbook-, systemd-README- oder Readiness-Dokumentation erkennt oder
+wenn der Script-Permission-Policy-Guard unerwartete Symlinks, World-writable-
+Drift, Owner-Drift oder Ausfuehrbarkeitsdrift in `scripts/`, `systemd/`, `docs/`
+oder ausgewaehlten Top-Level-Projektquellen erkennt oder
 wenn der Source-Hardening-Coverage-Guard neue oder verschobene `scripts/check-*`-
 Hilfen ohne dokumentierte Source-Hardening-Abdeckung erkennt oder
 wenn der Summary-Contract-Guard fehlende Statuskey-/Summary-Vertraege in

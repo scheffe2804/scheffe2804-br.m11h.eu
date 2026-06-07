@@ -166,6 +166,15 @@ Aktive Schutzschichten:
      Regressionen, Exporte, Repair, Cloudflare-Pattern-Hilfe und OCR auf
      Fail-Fast-Verhalten, kuratierte Helferpfade, explizite Laufzeitgrenzen und
      Keine-Secrets-Marker.
+38b. Script-Permission-Policy-Guard fuer die read-only metadata-only Pruefung
+     von Dateiart, Modus, Ownership, Symlinks, World-writable-Drift,
+     Group-writable-Sichtbarkeit und Ausfuehrbarkeits-Policy fuer `scripts/`,
+     `systemd/`, `docs/` und ausgewaehlte Top-Level-Projektquellen ohne
+     `chmod`-/`chown`-Remediation. Der Top-Level-Scope ist bewusst auf
+     `.env.example`, `.gitignore`, `Dockerfile`, `README.md`, `docker-compose.yml`
+     und `requirements.txt` begrenzt; Runtime-Artefakte, Secrets, Dumps, Logs,
+     Exporte und generierte Dateien bleiben bei Artifact-, Git- und Storage-
+     Guards.
 39. Python-Syntax-Guard fuer cache-freie AST-Pruefung der Python-Dateien in
     `app/`, `scripts/` und `worker/`.
 40. Shell-Syntax-Guard fuer `bash -n`-Pruefung der Shell-Skripte in `scripts/`.
@@ -263,7 +272,7 @@ Aktive Schutzschichten:
      Regressionsrunner, Docker-Wrapper und Regression-Freshness-Guard inklusive
      Kernfall-, Citation-, Export-, Manifest-, Storage- und Summary-Markern.
 62. Backup-Preflight-Kette inklusive Host-Kontext-Guard, Time-Sync-Guard, Compose-Service-Guard,
-    Privilege-Policy-Guard, Privilege-Risk-Review-Guard, Core-Source-Hardening-Guard, Container-Hardening-Guard, Container-Source-Hardening-Guard, Compose-Source-Hardening-Guard, Network-Source-Hardening-Guard, Network-Exposure-Guard, Public-DNS-Exposure-Guard, Public-DNS-Multiresolver-Guard, Public-DNS-Authoritative-Guard, Public-DNS-CAA-Guard, Direct-Origin-Bypass-Guard, Direct-Origin-Port-Exposure-Guard, Host-UDP-Exposure-Guard, Host-Firewall-BR-Ports-Guard, Host-NFT-BR-Ports-Guard, Network-Policy-Consistency-Guard, Network-Policy-Runtime-Env-Guard, Network-Policy-Runtime-Summary-Guard, Access-Runtime-Source-Hardening-Guard, Runtime-HTTP-Security-Guard, External-Access-Surface-Guard, External-Cookie-Security-Guard, TLS-Certificate-Guard, App-Auth-Surface-Guard, Import-Source-Hardening-Guard, Data-Integrity-Source-Hardening-Guard, Systemd-Source-Hardening-Guard, Status-Source-Hardening-Guard, Healthcheck-Source-Hardening-Guard, Backup-Source-Hardening-Guard, Restore-Source-Hardening-Guard, Freshness-Source-Hardening-Guard, Storage-Source-Hardening-Guard, Python-Syntax-Guard, Shell-Syntax-Guard, Guard-Coverage-Guard, Meta-Source-Hardening-Guard, Doku-Source-Hardening-Guard, Source-Hardening-Coverage-Guard, Summary-Contract-Guard, Readiness-Doku-Guard, Regression-Freshness-Guard und
+    Privilege-Policy-Guard, Privilege-Risk-Review-Guard, Core-Source-Hardening-Guard, Container-Hardening-Guard, Container-Source-Hardening-Guard, Compose-Source-Hardening-Guard, Network-Source-Hardening-Guard, Network-Exposure-Guard, Public-DNS-Exposure-Guard, Public-DNS-Multiresolver-Guard, Public-DNS-Authoritative-Guard, Public-DNS-CAA-Guard, Direct-Origin-Bypass-Guard, Direct-Origin-Port-Exposure-Guard, Host-UDP-Exposure-Guard, Host-Firewall-BR-Ports-Guard, Host-NFT-BR-Ports-Guard, Network-Policy-Consistency-Guard, Network-Policy-Runtime-Env-Guard, Network-Policy-Runtime-Summary-Guard, Access-Runtime-Source-Hardening-Guard, Runtime-HTTP-Security-Guard, External-Access-Surface-Guard, External-Cookie-Security-Guard, TLS-Certificate-Guard, App-Auth-Surface-Guard, Import-Source-Hardening-Guard, Data-Integrity-Source-Hardening-Guard, Systemd-Source-Hardening-Guard, Status-Source-Hardening-Guard, Healthcheck-Source-Hardening-Guard, Script-Permission-Policy-Guard, Backup-Source-Hardening-Guard, Restore-Source-Hardening-Guard, Freshness-Source-Hardening-Guard, Storage-Source-Hardening-Guard, Python-Syntax-Guard, Shell-Syntax-Guard, Guard-Coverage-Guard, Meta-Source-Hardening-Guard, Doku-Source-Hardening-Guard, Source-Hardening-Coverage-Guard, Summary-Contract-Guard, Readiness-Doku-Guard, Regression-Freshness-Guard und
      Regression-Source-Hardening-Guard.
 63. Projektprotokoll `/home/chris/web/diverses/betriebsrat.md` als eigener
      Restic-Backup-Pfad mit Restore-Smoke-Pruefung.
@@ -310,6 +319,7 @@ Aktueller Guard-Stand laut read-only Status-/Summary-Pruefungen vom 2026-06-06:
 - Status-Source-Hardening: `status_source_hardening_status=ok`.
 - Healthcheck-Source-Hardening: `healthcheck_source_hardening_status=ok`.
 - Operational-Wrapper-Source-Hardening: `operational_wrapper_source_hardening_status=ok`.
+- Script-Permission-Policy-Guard: `script_permission_policy_status=ok checks=935 findings=0 script_files=107 executable_scripts=99 non_executable_script_sources=8 systemd_files=11 docs_files=8 top_level_sources=4 world_writable=0 symlinks=0 owner_mismatches=0 executable_policy_failures=0 group_writable_sources=114`.
 - Core-Source-Hardening: `core_source_hardening_status=ok`.
 - Container-Source-Hardening: `container_source_hardening_status=ok`.
 - Network-Source-Hardening: `network_source_hardening_status=ok`.
@@ -1230,6 +1240,7 @@ Verschluesseltes Restic-Backup laut Backup-Freshness-Guard beim Doku-Abgleich vo
 - Letzter Backup-Source-Hardening-Preflight: `backup_source_hardening_status=ok`.
 - Letzter Restore-Source-Hardening-Preflight: `restore_source_hardening_status=ok`.
 - Letzter Operational-Wrapper-Source-Hardening-Preflight: `operational_wrapper_source_hardening_status=ok checks=128 findings=0 wrappers=10 required_literals=106 forbidden_markers=10`.
+- Letzter Script-Permission-Policy-Preflight: `script_permission_policy_status=ok checks=935 findings=0 script_files=107 executable_scripts=99 non_executable_script_sources=8 systemd_files=11 docs_files=8 top_level_sources=4 world_writable=0 symlinks=0 owner_mismatches=0 executable_policy_failures=0 group_writable_sources=114`.
 - Letzter Python-Syntax-Preflight: `python_syntax_status=ok`.
 - Letzter Shell-Syntax-Preflight: `shell_syntax_status=ok`.
 - Letzter Guard-Coverage-Preflight: `guard_coverage_status=ok`.

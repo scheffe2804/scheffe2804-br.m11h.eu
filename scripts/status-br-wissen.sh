@@ -182,6 +182,10 @@ echo "## Operational-Wrapper-Source-Hardening"
 scripts/check-operational-wrapper-source-hardening.py --summary
 echo
 
+echo "## Script-Permission-Policy-Guard"
+scripts/check-script-permission-policy.py --summary
+echo
+
 echo "## Guard-Coverage-Guard"
 scripts/check-guard-coverage.py --summary
 echo

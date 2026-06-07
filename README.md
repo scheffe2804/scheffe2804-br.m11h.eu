@@ -300,6 +300,27 @@ Docker, rsync, OCR, Imports, Regressionen, Repairs, Exporte, Restic-, sudo- oder
 systemd-Aktionen. Der Guard laeuft im normalen Statuscheck, im systemd-
 Healthcheck-Preflight und im Backup-Preflight vor Dump/Restic.
 
+### Script-Permission-Policy-Guard pruefen
+
+```bash
+scripts/check-script-permission-policy.py
+scripts/check-script-permission-policy.py --summary
+```
+
+Der Guard ist read-only und prueft metadata-only Dateiart, Modus, Ownership,
+Symlink-, World-writable-, Group-writable- und Ausfuehrbarkeits-Policy fuer
+`scripts/`, `systemd/`, `docs/` und ausgewaehlte Top-Level-Projektquellen.
+Bewusst nicht ausfuehrbare Helper-Quellen in `scripts/` sowie `0664`-Doku- und
+Unit-Quellen werden als dokumentierte Projektquellen behandelt; es erfolgt keine
+`chmod`-/`chown`-Remediation. Der Summary-Marker ist
+`script_permission_policy_status=ok`. Der bewusst enge Top-Level-Scope umfasst
+nur `.env.example`, `.gitignore`, `Dockerfile`, `README.md`, `docker-compose.yml`
+und `requirements.txt`; Runtime-Artefakte, Secrets, Dumps, Logs, Exporte und
+generierte Dateien bleiben bei Artifact-, Git- und Storage-Guards. Der Guard liest
+keine Secrets, Dumps, Logs, Antworttexte, Exporte oder Quelleninhalte und laeuft
+im normalen Statuscheck, im systemd-Healthcheck-Preflight und im Backup-Preflight
+vor Dump/Restic.
+
 ### Projektbaum auf lokale Artefakte/Secrets pruefen
 
 ```bash

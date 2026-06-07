@@ -40,6 +40,7 @@ ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-systemd-source-hardening.p
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-status-source-hardening.py --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-healthcheck-source-hardening.py --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-operational-wrapper-source-hardening.py --summary
+ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-script-permission-policy.py --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-python-syntax.sh --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-shell-syntax.sh --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-guard-coverage.py --summary

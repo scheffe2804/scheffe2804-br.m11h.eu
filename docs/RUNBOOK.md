@@ -257,6 +257,33 @@ Der Guard laeuft auch:
 - als `ExecStartPre` im systemd-Healthcheck,
 - als Preflight im Backup-Skript vor Dump/Restic.
 
+## Script-Permission-Policy-Guard pruefen
+
+```bash
+cd /home/chris/web/br.m11h.eu
+scripts/check-script-permission-policy.py
+scripts/check-script-permission-policy.py --summary
+```
+
+Der Guard ist read-only und prueft metadata-only Dateiart, Modus, Ownership,
+Symlink-, World-writable-, Group-writable- und Ausfuehrbarkeits-Policy fuer
+`scripts/`, `systemd/`, `docs/` und ausgewaehlte Top-Level-Projektquellen. Die
+bekannten nicht ausfuehrbaren Helper-Quellen in `scripts/` sowie `0664`-Doku- und
+Unit-Quellen sind dokumentierte Projektquellen; der Guard nimmt keine
+`chmod`-/`chown`-Remediation vor. Erwarteter Marker ist
+`script_permission_policy_status=ok` mit `executable_policy_failures=0`,
+`world_writable=0`, `symlinks=0` und `owner_mismatches=0`.
+Der bewusst enge Top-Level-Scope umfasst nur `.env.example`, `.gitignore`,
+`Dockerfile`, `README.md`, `docker-compose.yml` und `requirements.txt`; Runtime-
+Artefakte, Secrets, Dumps, Logs, Exporte und generierte Dateien bleiben bei
+Artifact-, Git- und Storage-Guards.
+
+Der Guard laeuft auch:
+
+- im normalen Statuscheck unter `Script-Permission-Policy-Guard`,
+- als `ExecStartPre` im systemd-Healthcheck,
+- als Preflight im Backup-Skript vor Dump/Restic.
+
 ## Access-Runtime-Source-Hardening-Guard pruefen
 
 ```bash

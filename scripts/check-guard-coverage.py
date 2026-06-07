@@ -74,6 +74,7 @@ GUARDS: list[GuardSpec] = [
     GuardSpec("Status-Source-Hardening", "check-status-source-hardening.py", "status_source_hardening_status", "Status-Source-Hardening", "status_source_hardening"),
     GuardSpec("Healthcheck-Source-Hardening", "check-healthcheck-source-hardening.py", "healthcheck_source_hardening_status", "Healthcheck-Source-Hardening", "healthcheck_source_hardening"),
     GuardSpec("Operational-Wrapper-Source-Hardening", "check-operational-wrapper-source-hardening.py", "operational_wrapper_source_hardening_status", "Operational-Wrapper-Source-Hardening", "operational_wrapper_source_hardening"),
+    GuardSpec("Script-Permission-Policy-Guard", "check-script-permission-policy.py", "script_permission_policy_status", "Script-Permission-Policy-Guard", "script_permission_policy"),
     GuardSpec("Python-Syntax-Guard", "check-python-syntax.sh", "python_syntax_status", "Python-Syntax-Guard", "python_syntax"),
     GuardSpec("Shell-Syntax-Guard", "check-shell-syntax.sh", "shell_syntax_status", "Shell-Syntax-Guard", "shell_syntax"),
     GuardSpec("Guard-Coverage-Guard", "check-guard-coverage.py", "guard_coverage_status", "Guard-Coverage-Guard", "guard_coverage"),

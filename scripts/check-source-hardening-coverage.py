@@ -106,6 +106,7 @@ COVERAGE_GROUPS: dict[str, dict[str, list[str] | str]] = {
             "check-python-syntax.sh",
             "check-shell-syntax.sh",
             "check-systemd-units.sh",
+            "check-script-permission-policy.py",
             "check-doc-source-hardening.py",
             "check-source-hardening-coverage.py",
             "check-summary-contracts.py",
