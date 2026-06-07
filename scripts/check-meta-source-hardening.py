@@ -317,6 +317,7 @@ GIT_REMOTE_READINESS_MARKERS: list[tuple[str, str]] = [
     ("expected_remote", "EXPECTED_REMOTE = os.getenv(\"BR_GIT_EXPECTED_REMOTE\", \"git@github.com:scheffe2804/scheffe2804-br.m11h.eu.git\")"),
     ("expected_remote_head", "EXPECTED_REMOTE_HEAD = os.getenv(\"BR_GIT_EXPECTED_REMOTE_HEAD\", \"refs/heads/main\")"),
     ("sudo_path", "SUDO = Path(\"/usr/bin/sudo\")"),
+    ("git_path", "GIT = Path(\"/usr/bin/git\")"),
     ("allowed_env", "ALLOWED_TRACKED_ENV = {\".env.example\"}"),
     ("required_ignores", "REQUIRED_IGNORES = ["),
     ("cloudflared_ignore", "cloudflared/config.yml"),

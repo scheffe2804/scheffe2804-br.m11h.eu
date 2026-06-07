@@ -22,6 +22,8 @@ EXPECTED_THIS_SERVER = os.getenv("BR_EXPECTED_THIS_SERVER", "m11h")
 EXPECTED_PUBLIC_IPV4 = os.getenv("BR_EXPECTED_PUBLIC_IPV4", "31.70.74.139")
 EXPECTED_TAILSCALE_IPV4 = os.getenv("BR_EXPECTED_TAILSCALE_IPV4", "100.102.205.121")
 EXPECTED_M00H_DIFFERENT = os.getenv("BR_EXPECTED_M00H_DIFFERENT_SERVER", "true")
+HOSTNAME = Path("/usr/bin/hostname")
+TAILSCALE = Path("/usr/bin/tailscale")
 
 
 def parse_context(path: Path) -> dict[str, str]:
@@ -38,14 +40,18 @@ def parse_context(path: Path) -> dict[str, str]:
 
 
 def current_hostname() -> str:
-    proc = subprocess.run(["hostname"], text=True, capture_output=True, check=False)
-    if proc.returncode == 0 and proc.stdout.strip():
+    proc = None
+    if HOSTNAME.exists() and not HOSTNAME.is_symlink() and HOSTNAME.is_file():
+        proc = subprocess.run([str(HOSTNAME)], text=True, capture_output=True, check=False)
+    if proc and proc.returncode == 0 and proc.stdout.strip():
         return proc.stdout.strip()
     return socket.gethostname()
 
 
 def current_tailscale_ipv4() -> str:
-    proc = subprocess.run(["tailscale", "ip", "-4"], text=True, capture_output=True, check=False)
+    if not TAILSCALE.exists() or TAILSCALE.is_symlink() or not TAILSCALE.is_file():
+        return ""
+    proc = subprocess.run([str(TAILSCALE), "ip", "-4"], text=True, capture_output=True, check=False)
     if proc.returncode != 0:
         return ""
     return proc.stdout.strip().splitlines()[0].strip() if proc.stdout.strip() else ""

@@ -25,6 +25,8 @@ PERMISSION_MARKERS: list[tuple[str, str]] = [
     ("docstring_metadata_only", "The guard checks only metadata: modes, ownership classes, symlink counts and\nsecret-candidate counts."),
     ("app_dir", "APP_DIR = Path(os.getenv(\"BR_APP_DIR\", \"/home/chris/web/br.m11h.eu\"))"),
     ("storage_root", "STORAGE_ROOT = Path(os.getenv(\"BR_STORAGE_ROOT\", \"/srv/br-wissensdatenbank\"))"),
+    ("sudo_path", "SUDO = Path(\"/usr/bin/sudo\")"),
+    ("helper_available", "def helper_available(path: Path) -> bool:"),
     ("scan_metadata", "def scan_metadata()"),
     ("secrets_path", "secrets = root / \"secrets\""),
     ("cloudflared_path", "cloudflared = secrets / \"cloudflared\""),

@@ -24,6 +24,7 @@ EXPECTED_BRANCH = os.getenv("BR_GIT_EXPECTED_BRANCH", "main")
 EXPECTED_REMOTE = os.getenv("BR_GIT_EXPECTED_REMOTE", "git@github.com:scheffe2804/scheffe2804-br.m11h.eu.git")
 EXPECTED_REMOTE_HEAD = os.getenv("BR_GIT_EXPECTED_REMOTE_HEAD", "refs/heads/main")
 SUDO = Path("/usr/bin/sudo")
+GIT = Path("/usr/bin/git")
 ALLOWED_TRACKED_ENV = {".env.example"}
 REQUIRED_IGNORES = [
     ".env",
@@ -98,7 +99,9 @@ def sudo_is_usable() -> bool:
 
 
 def run_git(args: list[str]) -> tuple[int, str]:
-    command = ["git", *args]
+    if not GIT.exists() or GIT.is_symlink() or not GIT.is_file():
+        return 127, ""
+    command = [str(GIT), *args]
     owner = project_owner()
     if owner and sudo_is_usable():
         command = [str(SUDO), "-n", "-u", owner, *command]

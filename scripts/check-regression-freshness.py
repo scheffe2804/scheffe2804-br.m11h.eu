@@ -20,6 +20,8 @@ from typing import Any
 
 ROOT = Path(os.getenv("BR_APP_DIR", "/home/chris/web/br.m11h.eu"))
 STORAGE_ROOT = Path(os.getenv("BR_STORAGE_ROOT", "/srv/br-wissensdatenbank"))
+SUDO = Path("/usr/bin/sudo")
+STAT = Path("/usr/bin/stat")
 
 CASES: list[dict[str, Any]] = [
     {
@@ -59,6 +61,10 @@ def sql_quote(value: str) -> str:
 
 def run(args: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(args, cwd=str(ROOT), text=True, capture_output=True, check=False)
+
+
+def helper_available(path: Path) -> bool:
+    return path.exists() and not path.is_symlink() and path.is_file()
 
 
 def parse_key_values(stdout: str) -> dict[str, str]:
@@ -132,7 +138,9 @@ def guarded_file_size(path_value: str) -> tuple[bool, int]:
     try:
         return path.is_file(), path.stat().st_size if path.is_file() else 0
     except PermissionError:
-        proc = run(["sudo", "-n", "stat", "-c", "%s", str(path)])
+        if not helper_available(SUDO) or not helper_available(STAT):
+            return False, 0
+        proc = run([str(SUDO), "-n", str(STAT), "-c", "%s", str(path)])
         if proc.returncode != 0:
             return False, 0
         try:

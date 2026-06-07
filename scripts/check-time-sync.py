@@ -12,11 +12,14 @@ from __future__ import annotations
 import argparse
 import re
 import subprocess
+from pathlib import Path
 
 
 MAX_SYSTEM_OFFSET_SECONDS = 1.0
 MAX_RMS_OFFSET_SECONDS = 1.0
 MAX_STRATUM = 8
+TIMEDATECTL = Path("/usr/bin/timedatectl")
+CHRONYC = Path("/usr/bin/chronyc")
 
 
 def number_value(value: float | int | str | None, default: float) -> float:
@@ -27,8 +30,14 @@ def run(args: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(args, text=True, capture_output=True, check=False)
 
 
+def helper_available(path: Path) -> bool:
+    return path.exists() and not path.is_symlink() and path.is_file()
+
+
 def timedatectl_values() -> dict[str, str] | None:
-    proc = run(["timedatectl", "show", "-p", "NTPSynchronized", "-p", "SystemClockSynchronized", "-p", "Timezone"])
+    if not helper_available(TIMEDATECTL):
+        return None
+    proc = run([str(TIMEDATECTL), "show", "-p", "NTPSynchronized", "-p", "SystemClockSynchronized", "-p", "Timezone"])
     if proc.returncode != 0:
         return None
     values: dict[str, str] = {}
@@ -48,7 +57,9 @@ def parse_seconds(line: str) -> float | None:
 
 
 def chrony_tracking() -> dict[str, float | int | str] | None:
-    proc = run(["chronyc", "tracking"])
+    if not helper_available(CHRONYC):
+        return None
+    proc = run([str(CHRONYC), "tracking"])
     if proc.returncode != 0:
         return None
     values: dict[str, float | int | str] = {

@@ -18,10 +18,15 @@ from typing import Any
 
 APP_DIR = Path(os.getenv("BR_APP_DIR", "/home/chris/web/br.m11h.eu"))
 STORAGE_ROOT = Path(os.getenv("BR_STORAGE_ROOT", "/srv/br-wissensdatenbank"))
+SUDO = Path("/usr/bin/sudo")
 
 
 def run(args: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(args, text=True, capture_output=True, check=False)
+
+
+def helper_available(path: Path) -> bool:
+    return path.exists() and not path.is_symlink() and path.is_file()
 
 
 def scan_metadata() -> dict[str, Any]:
@@ -148,7 +153,9 @@ def scan_metadata() -> dict[str, Any]:
 
 
 def sudo_scan() -> dict[str, Any] | None:
-    proc = run(["sudo", "-n", str(APP_DIR / "scripts/check-storage-permissions.py"), "--scan-json"])
+    if not helper_available(SUDO):
+        return None
+    proc = run([str(SUDO), "-n", str(APP_DIR / "scripts/check-storage-permissions.py"), "--scan-json"])
     if proc.returncode != 0:
         return None
     try:

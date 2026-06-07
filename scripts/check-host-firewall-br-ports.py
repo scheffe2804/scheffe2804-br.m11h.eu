@@ -32,6 +32,8 @@ EXPECTED_LOOPBACK_TCP = {
 DEFAULT_DIRECT_HOSTS = "0.0.0.0,::,31.70.74.139,2a01:239:4ba:bf00::1,100.102.205.121,fd7a:115c:a1e0::f233:cd79"
 DIRECT_HOSTS = {item.strip().strip("[]") for item in os.getenv("BR_FIREWALL_DIRECT_HOSTS", DEFAULT_DIRECT_HOSTS).split(",") if item.strip()}
 LOOPBACK_HOSTS = {"127.0.0.1", "::1", "localhost"}
+SUDO = Path("/usr/bin/sudo")
+XTABLES_NFT_MULTI = Path("/usr/sbin/xtables-nft-multi")
 
 
 def parse_ports(values: list[str]) -> tuple[set[int], list[str]]:
@@ -79,10 +81,17 @@ def run(args: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(args, text=True, capture_output=True, check=False)
 
 
-def save_output(command: str, findings: list[str]) -> tuple[int, str]:
-    proc = run(["sudo", "-n", command])
+def helper_available(path: Path) -> bool:
+    return path.exists() and not path.is_symlink() and path.is_file()
+
+
+def save_output(label: str, subcommand: str, findings: list[str]) -> tuple[int, str]:
+    if not helper_available(SUDO) or not helper_available(XTABLES_NFT_MULTI):
+        findings.append("firewall_%s_helper_unavailable" % label)
+        return 1, ""
+    proc = run([str(SUDO), "-n", str(XTABLES_NFT_MULTI), subcommand])
     if proc.returncode != 0:
-        findings.append("firewall_%s_unavailable_rc=%d" % (command.replace("-", "_"), proc.returncode))
+        findings.append("firewall_%s_unavailable_rc=%d" % (label, proc.returncode))
         return 1, ""
     return 1, proc.stdout
 
@@ -244,8 +253,8 @@ def main() -> int:
     if not DIRECT_HOSTS:
         findings.append("firewall_no_direct_hosts_configured")
 
-    checks4, out4 = save_output("iptables-save", findings)
-    checks6, out6 = save_output("ip6tables-save", findings)
+    checks4, out4 = save_output("iptables_save", "iptables-save", findings)
+    checks6, out6 = save_output("ip6tables_save", "ip6tables-save", findings)
     checks += checks4 + checks6
     counters4 = analyze_save("ipv4", out4, findings) if out4 else {}
     counters6 = analyze_save("ipv6", out6, findings) if out6 else {}

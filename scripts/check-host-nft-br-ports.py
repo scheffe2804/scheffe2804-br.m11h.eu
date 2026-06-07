@@ -37,6 +37,8 @@ LOOPBACK_HOSTS = {"127.0.0.1", "::1", "localhost"}
 INPUT_CHAINS = {"INPUT", "ufw-user-input", "ufw6-user-input"}
 UNSUPPORTED_EXPR_KEYS = {"lookup", "map", "vmap", "dynset", "objref", "flow"}
 MAX_CHAIN_TRAVERSAL_DEPTH = int(os.getenv("BR_NFT_MAX_CHAIN_TRAVERSAL_DEPTH", "12"))
+SUDO = Path("/usr/bin/sudo")
+NFT = Path("/usr/sbin/nft")
 
 
 def parse_ports(values: list[str]) -> tuple[set[int], list[str]]:
@@ -82,6 +84,10 @@ DIRECT_HOSTS.update(load_context_direct_hosts())
 
 def run(args: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(args, text=True, capture_output=True, check=False)
+
+
+def helper_available(path: Path) -> bool:
+    return path.exists() and not path.is_symlink() and path.is_file()
 
 
 def normalize_host(value: str) -> str:
@@ -347,7 +353,10 @@ def is_docker_bridge_rule(rule_meta: dict[str, Any], chain: str) -> bool:
 
 
 def nft_ruleset(findings: list[str]) -> tuple[int, dict[str, Any]]:
-    proc = run(["sudo", "-n", "nft", "-j", "list", "ruleset"])
+    if not helper_available(SUDO) or not helper_available(NFT):
+        findings.append("nft_ruleset_helper_unavailable")
+        return 1, {}
+    proc = run([str(SUDO), "-n", str(NFT), "-j", "list", "ruleset"])
     if proc.returncode != 0:
         findings.append("nft_ruleset_unavailable_rc=%d" % proc.returncode)
         return 1, {}

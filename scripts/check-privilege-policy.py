@@ -14,14 +14,27 @@ from __future__ import annotations
 import argparse
 import re
 import os
+import stat
 import subprocess
+from pathlib import Path
 
 
 TARGET_USER = os.getenv("BR_PRIVILEGE_POLICY_USER", "chris")
+SUDO = Path("/usr/bin/sudo")
+
+
+def sudo_is_usable() -> bool:
+    if not SUDO.exists() or SUDO.is_symlink() or not SUDO.is_file():
+        return False
+    st = SUDO.lstat()
+    mode = stat.S_IMODE(st.st_mode)
+    return bool(st.st_uid == 0 and st.st_gid == 0 and not mode & 0o022 and mode & 0o111 and mode & stat.S_ISUID)
 
 
 def run_sudo_list() -> subprocess.CompletedProcess[str]:
-    return subprocess.run(["sudo", "-n", "-l", "-U", TARGET_USER], text=True, capture_output=True, check=False)
+    if not sudo_is_usable():
+        return subprocess.CompletedProcess(args=[str(SUDO), "-n", "-l", "-U", TARGET_USER], returncode=127, stdout="", stderr="sudo helper unavailable")
+    return subprocess.run([str(SUDO), "-n", "-l", "-U", TARGET_USER], text=True, capture_output=True, check=False)
 
 
 def parse_policy(text: str) -> dict[str, int | str]:

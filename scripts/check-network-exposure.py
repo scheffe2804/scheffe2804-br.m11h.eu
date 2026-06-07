@@ -26,10 +26,16 @@ EXPECTED_HOSTNAME = "br.m11h.eu"
 EXPECTED_TUNNEL_SERVICE = "http://proxy:8080"
 EXPECTED_CREDENTIAL_PREFIX = "/run/br-secrets/cloudflared/"
 LOOPBACK_HOSTS = {"127.0.0.1", "localhost", "::1"}
+SUDO = Path("/usr/bin/sudo")
+NFT = Path("/usr/sbin/nft")
 
 
 def run(args: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(args, cwd=str(ROOT), text=True, capture_output=True, check=False)
+
+
+def helper_available(path: Path) -> bool:
+    return path.exists() and not path.is_symlink() and path.is_file()
 
 
 def compose_ps() -> tuple[int, list[dict[str, Any]]]:
@@ -254,9 +260,12 @@ def walk_json(value: Any):
 
 
 def check_nft_nat(findings: list[str]) -> tuple[int, int]:
-    proc = run(["sudo", "-n", "nft", "-j", "list", "ruleset"])
     checks = 1
     redirect_count = 0
+    if not helper_available(SUDO) or not helper_available(NFT):
+        findings.append("nft_ruleset_helper_unavailable")
+        return checks, redirect_count
+    proc = run([str(SUDO), "-n", str(NFT), "-j", "list", "ruleset"])
     if proc.returncode != 0:
         findings.append("nft_ruleset_unavailable")
         return checks, redirect_count
