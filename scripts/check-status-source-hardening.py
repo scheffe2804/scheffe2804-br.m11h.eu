@@ -19,12 +19,20 @@ from pathlib import Path
 
 ROOT = Path(os.getenv("BR_APP_DIR", "/home/chris/web/br.m11h.eu"))
 STATUS_SCRIPT = ROOT / "scripts" / "status-br-wissen.sh"
+DUPLICATE_REPORT_WRAPPER = ROOT / "scripts" / "report-duplicate-documents-docker.sh"
 
 
 REQUIRED_LITERALS = [
     "set -euo pipefail",
     "ROOT=\"/home/chris/web/br.m11h.eu\"",
     "HOST_CONTEXT=\"/etc/opencode-host-context\"",
+    "DATE_BIN=\"/usr/bin/date\"",
+    "HOSTNAME_BIN=\"/usr/bin/hostname\"",
+    "GREP_BIN=\"/usr/bin/grep\"",
+    "TAILSCALE_BIN=\"/usr/bin/tailscale\"",
+    "DOCKER_BIN=\"/usr/bin/docker\"",
+    "SYSTEMCTL_BIN=\"/usr/bin/systemctl\"",
+    "PYTHON_BIN=\"/usr/bin/python3.13\"",
     "run_regressions=0",
     "verbose_health=0",
     "show_duplicates=0",
@@ -35,12 +43,13 @@ REQUIRED_LITERALS = [
     "--image-pinning",
     "Usage: status-br-wissen.sh [--with-regressions] [--verbose-health] [--duplicates] [--image-pinning]",
     "cd \"$ROOT\"",
-    "timestamp_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-    "grep -E '^(HOST_ROLE|HOST_FQDN|THIS_SERVER|PUBLIC_IPV4|TAILSCALE_IPV4|M00H_IS_DIFFERENT_SERVER)=' \"$HOST_CONTEXT\"",
-    "docker compose ps",
-    "systemctl is-active br-wissen-healthcheck.timer br-wissen-backup.timer br-wissen-import-bag.timer br-wissen-import-m00h.timer br-wissen-restore-smoke.timer",
-    "systemctl list-timers br-wissen-healthcheck.timer br-wissen-backup.timer br-wissen-import-bag.timer br-wissen-import-m00h.timer br-wissen-restore-smoke.timer --no-pager",
+    "timestamp_utc=$($DATE_BIN -u +%Y-%m-%dT%H:%M:%SZ)",
+    "\"$GREP_BIN\" -E '^(HOST_ROLE|HOST_FQDN|THIS_SERVER|PUBLIC_IPV4|TAILSCALE_IPV4|M00H_IS_DIFFERENT_SERVER)=' \"$HOST_CONTEXT\"",
+    "\"$DOCKER_BIN\" compose ps",
+    "\"$SYSTEMCTL_BIN\" is-active br-wissen-healthcheck.timer br-wissen-backup.timer br-wissen-import-bag.timer br-wissen-import-m00h.timer br-wissen-restore-smoke.timer",
+    "\"$SYSTEMCTL_BIN\" list-timers br-wissen-healthcheck.timer br-wissen-backup.timer br-wissen-import-bag.timer br-wissen-import-m00h.timer br-wissen-restore-smoke.timer --no-pager",
     "scripts/healthcheck-br-wissen-docker.sh --summary",
+    "HEALTH_JSON=\"$health_json\" \"$PYTHON_BIN\" - <<'PY'",
     "health_status=%s",
     "scripts/check-project-artifacts.sh",
     "scripts/check-runtime-log-markers.sh",
@@ -53,6 +62,15 @@ REQUIRED_LITERALS = [
     "skipped=true",
     "hint=Run with --with-regressions to create fresh regression answers and exports.",
     "status=ok",
+]
+
+
+DUPLICATE_WRAPPER_LITERALS = [
+    "set -euo pipefail",
+    "ROOT=\"/home/chris/web/br.m11h.eu\"",
+    "DOCKER_BIN=\"/usr/bin/docker\"",
+    "cd \"$ROOT\"",
+    "\"$DOCKER_BIN\" compose exec -T app python - < scripts/report-duplicate-documents.py",
 ]
 
 
@@ -231,6 +249,13 @@ def main() -> int:
         text = STATUS_SCRIPT.read_text(encoding="utf-8", errors="replace")
     checks += 1
 
+    if not DUPLICATE_REPORT_WRAPPER.exists():
+        findings.append("duplicate_wrapper_missing")
+        duplicate_wrapper_text = ""
+    else:
+        duplicate_wrapper_text = DUPLICATE_REPORT_WRAPPER.read_text(encoding="utf-8", errors="replace")
+    checks += 1
+
     for literal in REQUIRED_LITERALS:
         checks += 1
         if literal not in text:
@@ -246,6 +271,11 @@ def main() -> int:
         if call not in text:
             findings.append("missing_summary_call=%s" % safe(call))
 
+    for literal in DUPLICATE_WRAPPER_LITERALS:
+        checks += 1
+        if literal not in duplicate_wrapper_text:
+            findings.append("duplicate_wrapper_missing_literal=%s" % safe(literal))
+
     checks += 1
     if text.find("run_regressions=0") > text.find("scripts/run-regressions-docker.sh"):
         findings.append("regression_default_after_regression_call")
@@ -260,13 +290,14 @@ def main() -> int:
         findings.append("regression_opt_in_missing")
 
     status = "ok" if not findings else "failed"
-    summary = "status_source_hardening_status=%s checks=%d findings=%d sections=%d summary_calls=%d required_literals=%d" % (
+    summary = "status_source_hardening_status=%s checks=%d findings=%d sections=%d summary_calls=%d required_literals=%d duplicate_wrapper_literals=%d" % (
         status,
         checks,
         len(findings),
         len(EXPECTED_SECTIONS),
         len(EXPECTED_SUMMARY_CALLS),
         len(REQUIRED_LITERALS),
+        len(DUPLICATE_WRAPPER_LITERALS),
     )
     if args.summary:
         print(summary)

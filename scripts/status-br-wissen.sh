@@ -3,6 +3,13 @@ set -euo pipefail
 
 ROOT="/home/chris/web/br.m11h.eu"
 HOST_CONTEXT="/etc/opencode-host-context"
+DATE_BIN="/usr/bin/date"
+HOSTNAME_BIN="/usr/bin/hostname"
+GREP_BIN="/usr/bin/grep"
+TAILSCALE_BIN="/usr/bin/tailscale"
+DOCKER_BIN="/usr/bin/docker"
+SYSTEMCTL_BIN="/usr/bin/systemctl"
+PYTHON_BIN="/usr/bin/python3.13"
 
 run_regressions=0
 verbose_health=0
@@ -32,16 +39,16 @@ done
 cd "$ROOT"
 
 echo "# BR Wissensdatenbank Status"
-echo "timestamp_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+echo "timestamp_utc=$($DATE_BIN -u +%Y-%m-%dT%H:%M:%SZ)"
 echo
 
 echo "## Host"
-echo "hostname=$(hostname)"
+echo "hostname=$($HOSTNAME_BIN)"
 if [[ -f "$HOST_CONTEXT" ]]; then
-  grep -E '^(HOST_ROLE|HOST_FQDN|THIS_SERVER|PUBLIC_IPV4|TAILSCALE_IPV4|M00H_IS_DIFFERENT_SERVER)=' "$HOST_CONTEXT" || true
+  "$GREP_BIN" -E '^(HOST_ROLE|HOST_FQDN|THIS_SERVER|PUBLIC_IPV4|TAILSCALE_IPV4|M00H_IS_DIFFERENT_SERVER)=' "$HOST_CONTEXT" || true
 fi
-if command -v tailscale >/dev/null 2>&1; then
-  echo "tailscale_ipv4=$(tailscale ip -4 2>/dev/null || true)"
+if [[ -x "$TAILSCALE_BIN" ]]; then
+  echo "tailscale_ipv4=$($TAILSCALE_BIN ip -4 2>/dev/null || true)"
 fi
 echo
 
@@ -54,7 +61,7 @@ scripts/check-time-sync.py --summary
 echo
 
 echo "## Docker Compose"
-docker compose ps
+"$DOCKER_BIN" compose ps
 echo
 
 echo "## Compose-Service-Guard"
@@ -154,8 +161,8 @@ scripts/check-network-policy-runtime-summary.py --summary
 echo
 
 echo "## Systemd Timer"
-systemctl is-active br-wissen-healthcheck.timer br-wissen-backup.timer br-wissen-import-bag.timer br-wissen-import-m00h.timer br-wissen-restore-smoke.timer
-systemctl list-timers br-wissen-healthcheck.timer br-wissen-backup.timer br-wissen-import-bag.timer br-wissen-import-m00h.timer br-wissen-restore-smoke.timer --no-pager
+"$SYSTEMCTL_BIN" is-active br-wissen-healthcheck.timer br-wissen-backup.timer br-wissen-import-bag.timer br-wissen-import-m00h.timer br-wissen-restore-smoke.timer
+"$SYSTEMCTL_BIN" list-timers br-wissen-healthcheck.timer br-wissen-backup.timer br-wissen-import-bag.timer br-wissen-import-m00h.timer br-wissen-restore-smoke.timer --no-pager
 scripts/check-systemd-units.sh --summary
 echo
 
@@ -220,7 +227,7 @@ if [[ "$verbose_health" -eq 1 ]]; then
   scripts/healthcheck-br-wissen-docker.sh
 else
   health_json="$(scripts/healthcheck-br-wissen-docker.sh --summary)"
-  HEALTH_JSON="$health_json" python3 - <<'PY'
+  HEALTH_JSON="$health_json" "$PYTHON_BIN" - <<'PY'
 import json
 import os
 

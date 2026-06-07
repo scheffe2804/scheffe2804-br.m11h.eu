@@ -102,8 +102,9 @@ SUMMARY_MARKERS = [
 WRAPPER_LITERALS = [
     "set -euo pipefail",
     "ROOT=\"/home/chris/web/br.m11h.eu\"",
+    "DOCKER_BIN=\"/usr/bin/docker\"",
     "cd \"$ROOT\"",
-    "docker compose exec -T app python - \"$@\" < scripts/healthcheck-br-wissen.py",
+    "\"$DOCKER_BIN\" compose exec -T app python - \"$@\" < scripts/healthcheck-br-wissen.py",
 ]
 
 
@@ -178,7 +179,7 @@ def main() -> int:
     if health_text.find("failures: list[str]") > health_text.find("return 0 if not failures else 1"):
         findings.append("failures_declared_after_return")
     checks += 1
-    if wrapper_text.find("cd \"$ROOT\"") > wrapper_text.find("docker compose exec -T app python"):
+    if wrapper_text.find("cd \"$ROOT\"") > wrapper_text.find("compose exec -T app python"):
         findings.append("wrapper_docker_before_cd")
 
     status = "ok" if not findings else "failed"

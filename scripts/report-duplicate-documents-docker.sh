@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT="/home/chris/web/br.m11h.eu"
+DOCKER_BIN="/usr/bin/docker"
 
 cd "$ROOT"
-docker compose exec -T app python - < scripts/report-duplicate-documents.py
+"$DOCKER_BIN" compose exec -T app python - < scripts/report-duplicate-documents.py
