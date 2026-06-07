@@ -3,6 +3,9 @@ set -euo pipefail
 
 ROOT="/home/chris/web/br.m11h.eu"
 summary=0
+BASH_BIN="/usr/bin/bash"
+FIND_BIN="/usr/bin/find"
+SORT_BIN="/usr/bin/sort"
 
 for arg in "$@"; do
   case "$arg" in
@@ -25,7 +28,7 @@ findings=0
 check_file() {
   local path="$1"
   checked=$((checked + 1))
-  if bash -n "$path" >/dev/null 2>&1; then
+  if "$BASH_BIN" -n "$path" >/dev/null 2>&1; then
     if [[ "$summary" -eq 0 ]]; then
       printf 'shell_syntax_ok=%s\n' "$path"
     fi
@@ -60,7 +63,7 @@ while IFS= read -r path; do
     continue
   fi
   check_file "$path"
-done < <(find scripts -maxdepth 1 -type f \( -name '*.sh' -o -perm -u=x \) -print | sort)
+done < <("$FIND_BIN" scripts -maxdepth 1 -type f \( -name '*.sh' -o -perm -u=x \) -print | "$SORT_BIN")
 
 if [[ "$summary" -eq 1 ]]; then
   printf 'shell_syntax_status=%s checks=%d findings=%d checked_shell_files=%d\n' "$([[ "$status" -eq 0 ]] && echo ok || echo failed)" "$checked" "$findings" "$checked"

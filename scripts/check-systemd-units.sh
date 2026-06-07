@@ -3,6 +3,12 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 summary=0
+STAT_BIN="/usr/bin/stat"
+CMP_BIN="/usr/bin/cmp"
+SYSTEMCTL_BIN="/usr/bin/systemctl"
+LSATTR_BIN="/usr/bin/lsattr"
+GETFACL_BIN="/usr/bin/getfacl"
+GETFATTR_BIN="/usr/bin/getfattr"
 
 for arg in "$@"; do
   case "$arg" in
@@ -53,14 +59,11 @@ parent_policy_failures=0
 attr_policy_failures=0
 failed_services=0
 checks=0
-LSATTR_BIN="$(command -v lsattr || true)"
-GETFACL_BIN="$(command -v getfacl || true)"
-GETFATTR_BIN="$(command -v getfattr || true)"
 project_unit_owner="unknown"
 project_unit_group="unknown"
 if [[ -d "${ROOT}/systemd" ]]; then
-  project_unit_owner="$(stat -c '%U' "${ROOT}/systemd")"
-  project_unit_group="$(stat -c '%G' "${ROOT}/systemd")"
+  project_unit_owner="$($STAT_BIN -c '%U' "${ROOT}/systemd")"
+  project_unit_group="$($STAT_BIN -c '%G' "${ROOT}/systemd")"
 fi
 
 check_attr_policy() {
@@ -75,7 +78,7 @@ check_attr_policy() {
   # ACL/xattr tools are not installed here, so their availability is exposed in
   # the compact summary instead of installing packages or changing the system.
   checks=$((checks + 1))
-  if [[ -z "$LSATTR_BIN" ]]; then
+  if [[ ! -x "$LSATTR_BIN" ]]; then
     attr_policy_failures=$((attr_policy_failures + 1))
     if [[ "$summary" -eq 0 ]]; then
       printf 'systemd_attr_policy=%s status=lsattr_missing\n' "$label"
@@ -143,9 +146,9 @@ check_parent_directory_policy() {
     return
   fi
 
-  mode="$(stat -c '%a' "$path")"
-  owner="$(stat -c '%U' "$path")"
-  group="$(stat -c '%G' "$path")"
+  mode="$($STAT_BIN -c '%a' "$path")"
+  owner="$($STAT_BIN -c '%U' "$path")"
+  group="$($STAT_BIN -c '%G' "$path")"
 
   checks=$((checks + 1))
   if [[ "$mode" =~ [0-7][0-7][2367]$ ]]; then
@@ -207,9 +210,9 @@ check_unit_file_policy() {
     return
   fi
 
-  mode="$(stat -c '%a' "$path")"
-  owner="$(stat -c '%U' "$path")"
-  group="$(stat -c '%G' "$path")"
+  mode="$($STAT_BIN -c '%a' "$path")"
+  owner="$($STAT_BIN -c '%U' "$path")"
+  group="$($STAT_BIN -c '%G' "$path")"
 
   checks=$((checks + 1))
   if [[ "$strict_mode" == "installed" && ( "$mode" =~ [2367][0-7]$ || "$mode" =~ [0-7][2367]$ ) ]]; then
@@ -267,7 +270,7 @@ for unit in "${units[@]}"; do
   if [[ ! -f "$src" || ! -f "$dst" ]]; then
     status="missing"
     unit_missing=$((unit_missing + 1))
-  elif ! cmp -s "$src" "$dst"; then
+  elif ! "$CMP_BIN" -s "$src" "$dst"; then
     status="diff"
     sync_failures=$((sync_failures + 1))
   fi
@@ -284,7 +287,7 @@ done
 
 for timer in "${timers[@]}"; do
   checks=$((checks + 1))
-  timer_status="$(systemctl is-active "$timer" 2>/dev/null || true)"
+  timer_status="$($SYSTEMCTL_BIN is-active "$timer" 2>/dev/null || true)"
   if [[ "$timer_status" != "active" ]]; then
     timer_failures=$((timer_failures + 1))
   fi
@@ -295,7 +298,7 @@ done
 
 for service in "${services[@]}"; do
   checks=$((checks + 1))
-  service_state="$(systemctl is-failed "$service" 2>/dev/null || true)"
+  service_state="$($SYSTEMCTL_BIN is-failed "$service" 2>/dev/null || true)"
   if [[ "$service_state" == "failed" ]]; then
     failed_services=$((failed_services + 1))
   fi
@@ -307,10 +310,10 @@ done
 violations=$((sync_failures + timer_failures + unit_missing + unit_policy_failures + parent_policy_failures + attr_policy_failures + failed_services))
 if [[ "$violations" -eq 0 ]]; then
   printf 'systemd_unit_guard_status=ok checks=%d units=%d timers=%d services=%d sync_failures=0 missing_units=0 unit_policy_failures=0 parent_policy_failures=0 attr_policy_failures=0 lsattr_available=%d acl_tool_available=%d xattr_tool_available=%d inactive_timers=0 failed_services=0\n' \
-    "$checks" "${#units[@]}" "${#timers[@]}" "${#services[@]}" "$([[ -n "$LSATTR_BIN" ]] && printf 1 || printf 0)" "$([[ -n "$GETFACL_BIN" ]] && printf 1 || printf 0)" "$([[ -n "$GETFATTR_BIN" ]] && printf 1 || printf 0)"
+    "$checks" "${#units[@]}" "${#timers[@]}" "${#services[@]}" "$([[ -x "$LSATTR_BIN" ]] && printf 1 || printf 0)" "$([[ -x "$GETFACL_BIN" ]] && printf 1 || printf 0)" "$([[ -x "$GETFATTR_BIN" ]] && printf 1 || printf 0)"
   exit 0
 fi
 
 printf 'systemd_unit_guard_status=fail checks=%d units=%d timers=%d services=%d sync_failures=%d missing_units=%d unit_policy_failures=%d parent_policy_failures=%d attr_policy_failures=%d lsattr_available=%d acl_tool_available=%d xattr_tool_available=%d inactive_timers=%d failed_services=%d\n' \
-  "$checks" "${#units[@]}" "${#timers[@]}" "${#services[@]}" "$sync_failures" "$unit_missing" "$unit_policy_failures" "$parent_policy_failures" "$attr_policy_failures" "$([[ -n "$LSATTR_BIN" ]] && printf 1 || printf 0)" "$([[ -n "$GETFACL_BIN" ]] && printf 1 || printf 0)" "$([[ -n "$GETFATTR_BIN" ]] && printf 1 || printf 0)" "$timer_failures" "$failed_services"
+  "$checks" "${#units[@]}" "${#timers[@]}" "${#services[@]}" "$sync_failures" "$unit_missing" "$unit_policy_failures" "$parent_policy_failures" "$attr_policy_failures" "$([[ -x "$LSATTR_BIN" ]] && printf 1 || printf 0)" "$([[ -x "$GETFACL_BIN" ]] && printf 1 || printf 0)" "$([[ -x "$GETFATTR_BIN" ]] && printf 1 || printf 0)" "$timer_failures" "$failed_services"
 exit 1

@@ -2,6 +2,8 @@
 set -euo pipefail
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+DOCKER_BIN="/usr/bin/docker"
+GREP_BIN="/usr/bin/grep"
 
 cd "${APP_DIR}"
 
@@ -25,7 +27,7 @@ status="ok"
 findings=0
 
 for container in "${containers[@]}"; do
-  if ! docker inspect "${container}" >/dev/null 2>&1; then
+  if ! "$DOCKER_BIN" inspect "${container}" >/dev/null 2>&1; then
     echo "runtime_log_marker_check=${container} status=missing_container findings=0"
     status="fail"
     continue
@@ -33,7 +35,7 @@ for container in "${containers[@]}"; do
 
   container_findings=0
   for marker in "${markers[@]}"; do
-    if docker logs "${container}" 2>&1 | grep -Fq -- "${marker}"; then
+    if "$DOCKER_BIN" logs "${container}" 2>&1 | "$GREP_BIN" -Fq -- "${marker}"; then
       container_findings=$((container_findings + 1))
     fi
   done

@@ -80,17 +80,20 @@ CONTAINER_IMAGES_MARKERS: list[tuple[str, str]] = [
     ("strict_mode", "set -euo pipefail"),
     ("root", 'ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"'),
     ("summary_arg", "--summary"),
-    ("compose_config_images", "docker compose config --images"),
-    ("compose_ps_json", "docker compose ps --format json"),
+    ("docker_bin", "DOCKER_BIN=\"/usr/bin/docker\""),
+    ("python_bin", "PYTHON_BIN=\"/usr/bin/python3.13\""),
+    ("sort_bin", "SORT_BIN=\"/usr/bin/sort\""),
+    ("compose_config_images", "\"$DOCKER_BIN\" compose config --images"),
+    ("compose_ps_json", "\"$DOCKER_BIN\" compose ps --format json"),
     ("json_parser", "json.loads(line)"),
     ("image_field", 'obj.get("Image")'),
-    ("sort_unique", "sort -u"),
+    ("sort_unique", "\"$SORT_BIN\" -u"),
     ("local_build", 'status="local_build"'),
     ("digest_pinned", 'status="digest_pinned"'),
     ("latest_tag", 'status="latest_tag"'),
     ("unversioned_tag", 'status="unversioned_tag"'),
     ("tag_pinned", 'status="tag_pinned"'),
-    ("image_inspect", "docker image inspect"),
+    ("image_inspect", "\"$DOCKER_BIN\" image inspect"),
     ("status_ok", 'container_image_status="ok"'),
     ("status_warning", 'container_image_status="warning"'),
     ("status_failed", 'container_image_status="failed"'),
@@ -100,11 +103,14 @@ CONTAINER_IMAGES_MARKERS: list[tuple[str, str]] = [
 
 IMAGE_PINNING_GUARD_MARKERS: list[tuple[str, str]] = [
     ("strict_mode", "set -euo pipefail"),
+    ("docker_bin", "DOCKER_BIN=\"/usr/bin/docker\""),
+    ("python_bin", "PYTHON_BIN=\"/usr/bin/python3.13\""),
+    ("sort_bin", "SORT_BIN=\"/usr/bin/sort\""),
     ("refs", "declare -A refs"),
     ("origins", "declare -A origins"),
     ("add_ref", "add_ref()"),
-    ("compose_config_images", "docker compose config --images"),
-    ("compose_ps_json", "docker compose ps --format json"),
+    ("compose_config_images", "\"$DOCKER_BIN\" compose config --images"),
+    ("compose_ps_json", "\"$DOCKER_BIN\" compose ps --format json"),
     ("json_parser", "json.loads(line)"),
     ("dockerfile_app", '"$ROOT/app/Dockerfile"'),
     ("dockerfile_worker", '"$ROOT/worker/Dockerfile"'),
@@ -243,7 +249,7 @@ def main() -> int:
     if container_text.find("EXPECTED_CONTAINERS") > container_text.find("for expected, policy in EXPECTED_CONTAINERS.items()"):
         findings.append("container_policy_after_loop")
     checks += 1
-    if pinning_text.find("add_ref()") > pinning_text.find("docker compose config --images"):
+    if pinning_text.find("add_ref()") > pinning_text.find("add_ref \"$image\" \"compose_config\""):
         findings.append("pinning_add_ref_after_first_use")
     checks += 1
     if readiness_text.find("remote=1") > readiness_text.find("--no-remote"):

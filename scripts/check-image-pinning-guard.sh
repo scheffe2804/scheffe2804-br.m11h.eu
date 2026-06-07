@@ -3,6 +3,9 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 summary=0
+DOCKER_BIN="/usr/bin/docker"
+PYTHON_BIN="/usr/bin/python3.13"
+SORT_BIN="/usr/bin/sort"
 
 for arg in "$@"; do
   case "$arg" in
@@ -35,11 +38,11 @@ add_ref() {
 
 while IFS= read -r image; do
   add_ref "$image" "compose_config"
-done < <(docker compose config --images 2>/dev/null || true)
+done < <("$DOCKER_BIN" compose config --images 2>/dev/null || true)
 
 while IFS= read -r image; do
   add_ref "$image" "running_container"
-done < <(docker compose ps --format json 2>/dev/null | python3 -c 'import json,sys
+done < <("$DOCKER_BIN" compose ps --format json 2>/dev/null | "$PYTHON_BIN" -c 'import json,sys
 for line in sys.stdin:
     line=line.strip()
     if not line:
@@ -55,7 +58,7 @@ for line in sys.stdin:
 
 while IFS= read -r from_ref; do
   add_ref "$from_ref" "dockerfile_from"
-done < <(python3 - "$ROOT/app/Dockerfile" "$ROOT/worker/Dockerfile" <<'PY'
+done < <("$PYTHON_BIN" - "$ROOT/app/Dockerfile" "$ROOT/worker/Dockerfile" <<'PY'
 import pathlib
 import sys
 
@@ -78,7 +81,7 @@ for file_name in sys.argv[1:]:
 PY
 )
 
-mapfile -t sorted_refs < <(printf '%s\n' "${!refs[@]}" | sort)
+mapfile -t sorted_refs < <(printf '%s\n' "${!refs[@]}" | "$SORT_BIN")
 
 local_build=0
 digest_pinned=0

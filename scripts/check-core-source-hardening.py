@@ -233,9 +233,11 @@ RUNTIME_LOG_SOURCE_MARKERS: list[tuple[str, str]] = [
     ("proxy_authorization_marker", "Proxy-Authorization"),
     ("auth_token_marker", "X-Auth-Token"),
     ("api_key_marker", "X-Api-Key"),
-    ("docker_inspect", "docker inspect"),
-    ("docker_logs", "docker logs"),
-    ("grep_fixed", "grep -Fq --"),
+    ("docker_bin", "DOCKER_BIN=\"/usr/bin/docker\""),
+    ("grep_bin", "GREP_BIN=\"/usr/bin/grep\""),
+    ("docker_inspect", "\"$DOCKER_BIN\" inspect"),
+    ("docker_logs", "\"$DOCKER_BIN\" logs"),
+    ("grep_fixed", "\"$GREP_BIN\" -Fq --"),
     ("summary", "runtime_log_marker_status=${status} checks=${#containers[@]} markers=${#markers[@]} findings=${findings}"),
 ]
 

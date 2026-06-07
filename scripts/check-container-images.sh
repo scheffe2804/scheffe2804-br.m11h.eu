@@ -3,6 +3,9 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 summary=0
+DOCKER_BIN="/usr/bin/docker"
+PYTHON_BIN="/usr/bin/python3.13"
+SORT_BIN="/usr/bin/sort"
 
 for arg in "$@"; do
   case "$arg" in
@@ -20,8 +23,8 @@ cd "$ROOT"
 
 mapfile -t compose_images < <(
   {
-    docker compose config --images
-    docker compose ps --format json | python3 -c 'import json,sys
+    "$DOCKER_BIN" compose config --images
+    "$DOCKER_BIN" compose ps --format json | "$PYTHON_BIN" -c 'import json,sys
 for line in sys.stdin:
     line=line.strip()
     if not line:
@@ -31,7 +34,7 @@ for line in sys.stdin:
     if image:
         print(image)
 '
-  } | sort -u
+  } | "$SORT_BIN" -u
 )
 unversioned=0
 latest=0
@@ -64,7 +67,7 @@ for image in "${compose_images[@]}"; do
   if [[ "$summary" -eq 0 ]]; then
     image_id="unknown"
     created="unknown"
-    if inspect=$(docker image inspect "$image" --format '{{.Id}} {{.Created}}' 2>/dev/null); then
+    if inspect=$("$DOCKER_BIN" image inspect "$image" --format '{{.Id}} {{.Created}}' 2>/dev/null); then
       image_id="${inspect%% *}"
       created="${inspect#* }"
     fi

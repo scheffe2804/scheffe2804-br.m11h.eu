@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="/home/chris/web/br.m11h.eu"
 summary=0
+PYTHON_BIN="/usr/bin/python3.13"
 
 for arg in "$@"; do
   case "$arg" in
@@ -18,7 +19,7 @@ done
 
 cd "$ROOT"
 
-PYTHON_SYNTAX_SUMMARY="$summary" python3 - <<'PY'
+PYTHON_SYNTAX_SUMMARY="$summary" "$PYTHON_BIN" - <<'PY'
 import ast
 import os
 from pathlib import Path
