@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import os
 import re
+import stat
 import subprocess
 from pathlib import Path
 
@@ -22,6 +23,7 @@ ROOT = Path(os.getenv("BR_APP_DIR", "/home/chris/web/br.m11h.eu"))
 EXPECTED_BRANCH = os.getenv("BR_GIT_EXPECTED_BRANCH", "main")
 EXPECTED_REMOTE = os.getenv("BR_GIT_EXPECTED_REMOTE", "git@github.com:scheffe2804/scheffe2804-br.m11h.eu.git")
 EXPECTED_REMOTE_HEAD = os.getenv("BR_GIT_EXPECTED_REMOTE_HEAD", "refs/heads/main")
+SUDO = Path("/usr/bin/sudo")
 ALLOWED_TRACKED_ENV = {".env.example"}
 REQUIRED_IGNORES = [
     ".env",
@@ -70,9 +72,38 @@ SENSITIVE_TRACKED_PATTERNS = [
 ]
 
 
+def project_owner() -> str | None:
+    try:
+        st = ROOT.stat()
+    except OSError:
+        return None
+    if st.st_uid == os.geteuid():
+        return None
+    if st.st_uid == 0:
+        return None
+    try:
+        import pwd
+
+        return pwd.getpwuid(st.st_uid).pw_name
+    except (KeyError, ImportError):
+        return None
+
+
+def sudo_is_usable() -> bool:
+    if not SUDO.exists() or SUDO.is_symlink() or not SUDO.is_file():
+        return False
+    st = SUDO.lstat()
+    mode = stat.S_IMODE(st.st_mode)
+    return bool(st.st_uid == 0 and st.st_gid == 0 and not mode & 0o022 and mode & 0o111 and mode & stat.S_ISUID)
+
+
 def run_git(args: list[str]) -> tuple[int, str]:
+    command = ["git", *args]
+    owner = project_owner()
+    if owner and sudo_is_usable():
+        command = [str(SUDO), "-n", "-u", owner, *command]
     proc = subprocess.run(
-        ["git", *args],
+        command,
         cwd=str(ROOT),
         text=True,
         capture_output=True,
@@ -111,6 +142,7 @@ def main() -> int:
 
     code, branch = run_git(["branch", "--show-current"])
     checks += 1
+    owner = project_owner() or "self"
     if code != 0 or not branch:
         findings.append("git_branch_unavailable")
         branch = "unknown"
@@ -196,7 +228,7 @@ def main() -> int:
     status_value = "ok" if not findings else "failed"
     summary = (
         "git_remote_readiness_status=%s checks=%d findings=%d branch=%s tracking=%d dirty=%d "
-        "remote_head_present=%d local_head=%s remote_head=%s tracked_files=%d ignored_entries=%d sensitive_tracked=%d"
+        "remote_head_present=%d local_head=%s remote_head=%s tracked_files=%d ignored_entries=%d sensitive_tracked=%d git_user=%s"
         % (
             status_value,
             checks,
@@ -210,6 +242,7 @@ def main() -> int:
             len(tracked_files),
             ignored_count,
             len(sensitive_tracked),
+            owner,
         )
     )
     if args.summary:

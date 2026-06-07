@@ -274,11 +274,15 @@ GIT_REMOTE_READINESS_MARKERS: list[tuple[str, str]] = [
     ("expected_branch", "EXPECTED_BRANCH = os.getenv(\"BR_GIT_EXPECTED_BRANCH\", \"main\")"),
     ("expected_remote", "EXPECTED_REMOTE = os.getenv(\"BR_GIT_EXPECTED_REMOTE\", \"git@github.com:scheffe2804/scheffe2804-br.m11h.eu.git\")"),
     ("expected_remote_head", "EXPECTED_REMOTE_HEAD = os.getenv(\"BR_GIT_EXPECTED_REMOTE_HEAD\", \"refs/heads/main\")"),
+    ("sudo_path", "SUDO = Path(\"/usr/bin/sudo\")"),
     ("allowed_env", "ALLOWED_TRACKED_ENV = {\".env.example\"}"),
     ("required_ignores", "REQUIRED_IGNORES = ["),
     ("cloudflared_ignore", "cloudflared/config.yml"),
     ("sensitive_patterns", "SENSITIVE_TRACKED_PATTERNS = ["),
+    ("project_owner", "def project_owner() -> str | None:"),
+    ("sudo_is_usable", "def sudo_is_usable() -> bool:"),
     ("run_git", "def run_git(args: list[str]) -> tuple[int, str]:"),
+    ("sudo_user", "command = [str(SUDO), \"-n\", \"-u\", owner, *command]"),
     ("status_porcelain", "run_git([\"status\", \"--porcelain\"])"),
     ("remote_get_url", "run_git([\"remote\", \"get-url\", \"origin\"])"),
     ("upstream", "run_git([\"rev-parse\", \"--abbrev-ref\", \"--symbolic-full-name\", \"@{u}\"])"),
@@ -286,6 +290,7 @@ GIT_REMOTE_READINESS_MARKERS: list[tuple[str, str]] = [
     ("tracked_files", "run_git([\"ls-files\"])"),
     ("sensitive_tracked", "git_sensitive_tracked=%d"),
     ("summary", "git_remote_readiness_status=%s checks=%d findings=%d branch=%s tracking=%d dirty=%d"),
+    ("git_user_summary", "git_user=%s"),
 ]
 
 # Meta-governance inventory marker for source-hardening coverage:

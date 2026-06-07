@@ -436,10 +436,13 @@ auf Branch `main` ist, `origin` auf
 `origin/main` trackt, lokaler HEAD und GitHub-Remote-HEAD uebereinstimmen und im
 Git-Index keine typischen Secret-, Dump-, Credential-, Backup- oder Runtime-
 Artefakte versioniert sind. `.env.example` ist die einzige bewusst erlaubte
-Env-Datei im Index. Der Guard liest keine Secretdateien, gibt keine Diffs oder
-Dateiinhalte aus und fuehrt kein Commit, Push, Pull, Fetch, Backup, Restore,
-Docker, `systemctl`, Import, Regression oder DB-Abfragen aus. Aktueller erwarteter
-Marker ist `git_remote_readiness_status=ok` fuer das GitHub-Repo
+Env-Datei im Index. Wenn der Guard im Root-Backup-Kontext laeuft, werden Git-
+Metadaten per `sudo -n -u <Projektbesitzer>` als Projektbesitzer gelesen, damit
+SSH-Key/known_hosts konsistent bleiben; die Summary zeigt dies als `git_user=`.
+Der Guard liest keine Secretdateien, gibt keine Diffs oder Dateiinhalte aus und
+fuehrt kein Commit, Push, Pull, Fetch, Backup, Restore, Docker, `systemctl`,
+Import, Regression oder DB-Abfragen aus. Aktueller erwarteter Marker ist
+`git_remote_readiness_status=ok` fuer das GitHub-Repo
 `scheffe2804/scheffe2804-br.m11h.eu`.
 
 Der Guard laeuft im normalen Statuscheck, im systemd-Healthcheck-Preflight und im

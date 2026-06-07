@@ -743,7 +743,9 @@ und die GitHub-Remote-Head-Sicht. Erwartet werden Branch `main`, Remote
 `git@github.com:scheffe2804/scheffe2804-br.m11h.eu.git`, Tracking auf
 `origin/main`, gleicher lokaler und remote HEAD, ein sauberer Arbeitsbaum und ein
 Git-Index ohne typische Secret-, Dump-, Credential-, Backup- oder Runtime-
-Artefakte. `.env.example` ist als nicht-sensitives Beispiel bewusst erlaubt.
+Artefakte. `.env.example` ist als nicht-sensitives Beispiel bewusst erlaubt. Im
+Root-Backup-Kontext liest der Guard Git-Metadaten per `sudo -n -u <Projektbesitzer>`
+als Projektbesitzer; die Summary zeigt dies als `git_user=`.
 
 Der Guard liest keine Secretdateien, gibt keine Diffs oder Dateiinhalte aus und
 fuehrt kein Commit, Push, Pull, Fetch, Backup, Restore, Docker, `systemctl`,

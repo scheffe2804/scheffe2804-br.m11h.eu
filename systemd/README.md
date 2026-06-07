@@ -375,7 +375,8 @@ Kommandos auszufuehren. Der Git-Remote-Readiness-Guard prueft Branch `main`,
 Remote `git@github.com:scheffe2804/scheffe2804-br.m11h.eu.git`, Tracking auf
 `origin/main`, Remote-HEAD-Abgleich und Index-Schutz gegen typische Secret-/Dump-
 Artefakte; erwarteter Marker ist `git_remote_readiness_status=ok` fuer das
-GitHub-Repo `scheffe2804/scheffe2804-br.m11h.eu`.
+GitHub-Repo `scheffe2804/scheffe2804-br.m11h.eu`; im Root-Backup-Kontext zeigt
+die Summary den genutzten Projektbesitzer als `git_user=`.
 Der Container-Source-Hardening-Guard prueft die Container-/Image-Guardquellen auf
 metadata-only Docker-Inspect-, Compose-Image-, Dockerfile-`FROM`-, Digest-Pinning-
 und Readiness-Summary-Marker, ohne Docker, Compose oder Registry-Lookups
