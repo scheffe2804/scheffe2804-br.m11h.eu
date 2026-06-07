@@ -222,7 +222,8 @@ fehlende, nicht synchronisierte, als Symlink eingebundene, irregulaere,
 installiert group-/world-writable oder projekt-/installiert world-writable
 Unit-Dateien meldet (`unit_policy_failures=0`), unerwartete Unit-Owner meldet
 oder die Parent-Verzeichnis-Policy fuer `systemd/`, `/etc/systemd` oder
-`/etc/systemd/system` verletzt sieht (`parent_policy_failures=0`) oder wenn der Status-Source-
+`/etc/systemd/system` verletzt sieht (`parent_policy_failures=0`), unerwartete
+Linux-Dateiattribute meldet (`attr_policy_failures=0`) oder wenn der Status-Source-
 Hardening-Guard unerwartete Aenderungen am zentralen Status-Wrapper, seinen
 read-only Defaults, Opt-in-Pfaden oder Guard-Abschnitten erkennt oder wenn der
 Healthcheck-Source-Hardening-Guard unerwartete Aenderungen an App-Healthcheck-
@@ -354,7 +355,13 @@ haben. Erwarteter Marker ist `unit_policy_failures=0`. Der Guard prueft zudem di
 Parent-Verzeichnisse `systemd/`, `/etc/systemd` und `/etc/systemd/system` auf
 Symlink-Freiheit, Verzeichnistyp, keine world-writable Rechte und fuer installierte
 Parents `root:root` ohne group-/world-writable Rechte; erwarteter Marker ist
-`parent_policy_failures=0`. Die `root:root`-Anforderung gilt nur fuer installierte
+`parent_policy_failures=0`. Zusaetzlich nutzt der Guard das vorhandene `lsattr`,
+um Linux-Dateiattribute der direkten BR-Wissen-Unit-Dateien und Parent-
+Verzeichnisse metadata-only zu pruefen. Das normale Extents-Flag `e` ist erlaubt;
+andere sichtbare Attribute gelten als Drift. Erwartete Marker sind
+`attr_policy_failures=0` und `lsattr_available=1`. ACL-/xattr-Tools sind auf
+diesem Host nicht installiert und werden nicht nachinstalliert; die Summary weist
+das als `acl_tool_available=0` und `xattr_tool_available=0` aus. Die `root:root`-Anforderung gilt nur fuer installierte
 `/etc/systemd*`-Parents; das Projekt-`systemd/` folgt dem Projektbaum-Owner.
 Vendor-Units unter `/usr/lib/systemd`, Runtime-Units unter `/run/systemd` und
 User-Units sind nicht Teil dieses BR-Wissen-Direct-Unit-Guards. Der Scope ist auf

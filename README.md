@@ -1424,7 +1424,13 @@ ob keine Projekt- oder installierte Unit world-writable ist
 Projekt-Units denselben Owner/dieselbe Group wie `systemd/` haben und ob die
 Parent-Verzeichnisse `systemd/`, `/etc/systemd` und `/etc/systemd/system` keine
 unerwarteten Symlink-/Typ-/Owner-/Schreibrechte zeigen
-(`parent_policy_failures=0`) und ob die fuenf erwarteten Timer aktiv sind.
+(`parent_policy_failures=0`), ob vorhandene Linux-Dateiattribute per `lsattr`
+keine unerwarteten Flags ausser dem normalen Extents-Flag `e` zeigen
+(`attr_policy_failures=0`, `lsattr_available=1`) und ob die fuenf erwarteten
+Timer aktiv sind.
+ACL-/xattr-Tools sind auf diesem Host nicht installiert und werden nicht
+nachinstalliert; die Summary macht das transparent als `acl_tool_available=0` und
+`xattr_tool_available=0` sichtbar.
 Die `root:root`-Anforderung gilt dabei nur fuer die installierten `/etc/systemd*`-
 Parents; das Projekt-`systemd/` folgt dem Projektbaum-Owner. Vendor-Units unter
 `/usr/lib/systemd`, Runtime-Units unter `/run/systemd` und User-Units sind nicht

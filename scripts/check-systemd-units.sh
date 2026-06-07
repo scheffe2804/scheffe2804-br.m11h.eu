@@ -50,14 +50,67 @@ timer_failures=0
 unit_missing=0
 unit_policy_failures=0
 parent_policy_failures=0
+attr_policy_failures=0
 failed_services=0
 checks=0
+LSATTR_BIN="$(command -v lsattr || true)"
+GETFACL_BIN="$(command -v getfacl || true)"
+GETFATTR_BIN="$(command -v getfattr || true)"
 project_unit_owner="unknown"
 project_unit_group="unknown"
 if [[ -d "${ROOT}/systemd" ]]; then
   project_unit_owner="$(stat -c '%U' "${ROOT}/systemd")"
   project_unit_group="$(stat -c '%G' "${ROOT}/systemd")"
 fi
+
+check_attr_policy() {
+  local path="$1"
+  local label="$2"
+  local path_type="$3"
+  local flags output unexpected
+
+  # Metadata-only filesystem attribute policy. lsattr is available on this host
+  # and is used to fail closed on unexpected Linux file attributes. The normal
+  # extents flag "e" is allowed; other visible attributes are treated as drift.
+  # ACL/xattr tools are not installed here, so their availability is exposed in
+  # the compact summary instead of installing packages or changing the system.
+  checks=$((checks + 1))
+  if [[ -z "$LSATTR_BIN" ]]; then
+    attr_policy_failures=$((attr_policy_failures + 1))
+    if [[ "$summary" -eq 0 ]]; then
+      printf 'systemd_attr_policy=%s status=lsattr_missing\n' "$label"
+    fi
+    return
+  fi
+
+  checks=$((checks + 1))
+  if [[ "$path_type" == "dir" ]]; then
+    output="$($LSATTR_BIN -d "$path" 2>/dev/null || true)"
+  else
+    output="$($LSATTR_BIN "$path" 2>/dev/null || true)"
+  fi
+  if [[ -z "$output" ]]; then
+    attr_policy_failures=$((attr_policy_failures + 1))
+    if [[ "$summary" -eq 0 ]]; then
+      printf 'systemd_attr_policy=%s status=unreadable\n' "$label"
+    fi
+    return
+  fi
+  flags="${output%%[[:space:]]*}"
+  unexpected="${flags//-/}"
+  unexpected="${unexpected//e/}"
+  checks=$((checks + 1))
+  if [[ -n "$unexpected" ]]; then
+    attr_policy_failures=$((attr_policy_failures + 1))
+    if [[ "$summary" -eq 0 ]]; then
+      printf 'systemd_attr_policy=%s status=unexpected flags=%s unexpected=%s\n' "$label" "$flags" "$unexpected"
+    fi
+    return
+  fi
+  if [[ "$summary" -eq 0 ]]; then
+    printf 'systemd_attr_policy=%s status=ok flags=%s\n' "$label" "$flags"
+  fi
+}
 
 check_parent_directory_policy() {
   local path="$1"
@@ -123,6 +176,7 @@ check_parent_directory_policy() {
   if [[ "$summary" -eq 0 ]]; then
     printf 'systemd_parent_policy=%s status=ok mode=%s owner=%s group=%s\n' "$label" "$mode" "$owner" "$group"
   fi
+  check_attr_policy "$path" "$label" "dir"
 }
 
 check_unit_file_policy() {
@@ -194,6 +248,7 @@ check_unit_file_policy() {
   if [[ "$summary" -eq 0 ]]; then
     printf 'systemd_unit_policy=%s status=ok mode=%s owner=%s group=%s\n' "$label" "$mode" "$owner" "$group"
   fi
+  check_attr_policy "$path" "$label" "file"
 }
 
 if [[ "$summary" -eq 0 ]]; then
@@ -249,13 +304,13 @@ for service in "${services[@]}"; do
   fi
 done
 
-violations=$((sync_failures + timer_failures + unit_missing + unit_policy_failures + parent_policy_failures + failed_services))
+violations=$((sync_failures + timer_failures + unit_missing + unit_policy_failures + parent_policy_failures + attr_policy_failures + failed_services))
 if [[ "$violations" -eq 0 ]]; then
-  printf 'systemd_unit_guard_status=ok checks=%d units=%d timers=%d services=%d sync_failures=0 missing_units=0 unit_policy_failures=0 parent_policy_failures=0 inactive_timers=0 failed_services=0\n' \
-    "$checks" "${#units[@]}" "${#timers[@]}" "${#services[@]}"
+  printf 'systemd_unit_guard_status=ok checks=%d units=%d timers=%d services=%d sync_failures=0 missing_units=0 unit_policy_failures=0 parent_policy_failures=0 attr_policy_failures=0 lsattr_available=%d acl_tool_available=%d xattr_tool_available=%d inactive_timers=0 failed_services=0\n' \
+    "$checks" "${#units[@]}" "${#timers[@]}" "${#services[@]}" "$([[ -n "$LSATTR_BIN" ]] && printf 1 || printf 0)" "$([[ -n "$GETFACL_BIN" ]] && printf 1 || printf 0)" "$([[ -n "$GETFATTR_BIN" ]] && printf 1 || printf 0)"
   exit 0
 fi
 
-printf 'systemd_unit_guard_status=fail checks=%d units=%d timers=%d services=%d sync_failures=%d missing_units=%d unit_policy_failures=%d parent_policy_failures=%d inactive_timers=%d failed_services=%d\n' \
-  "$checks" "${#units[@]}" "${#timers[@]}" "${#services[@]}" "$sync_failures" "$unit_missing" "$unit_policy_failures" "$parent_policy_failures" "$timer_failures" "$failed_services"
+printf 'systemd_unit_guard_status=fail checks=%d units=%d timers=%d services=%d sync_failures=%d missing_units=%d unit_policy_failures=%d parent_policy_failures=%d attr_policy_failures=%d lsattr_available=%d acl_tool_available=%d xattr_tool_available=%d inactive_timers=%d failed_services=%d\n' \
+  "$checks" "${#units[@]}" "${#timers[@]}" "${#services[@]}" "$sync_failures" "$unit_missing" "$unit_policy_failures" "$parent_policy_failures" "$attr_policy_failures" "$([[ -n "$LSATTR_BIN" ]] && printf 1 || printf 0)" "$([[ -n "$GETFACL_BIN" ]] && printf 1 || printf 0)" "$([[ -n "$GETFATTR_BIN" ]] && printf 1 || printf 0)" "$timer_failures" "$failed_services"
 exit 1
