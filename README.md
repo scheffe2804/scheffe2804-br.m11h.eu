@@ -1189,8 +1189,14 @@ Pfadumfang fuer App, internen Datenbereich und Projektprotokoll. Er nutzt die
 root-only Backup-Env nur fuer `restic snapshots --json`, startet keine Backups
 oder Restores, ruft kein Docker, kein `systemctl`, keine Imports, Regressionen
 oder DB-Abfragen auf und gibt keine Backup-Secretwerte, Dump-Inhalte, Log-
-Inhalte, Antworttexte, Exporte oder Quelleninhalte aus. Die Summary bleibt auf
-Status, Zaehler und kurze Snapshot-ID beschraenkt. Der Guard laeuft im normalen
+Inhalte, Antworttexte, Exporte oder Quelleninhalte aus. Root-noetige Metadaten-
+Aufrufe nutzen kuratierte absolute Helferpfade: `/usr/bin/sudo`, `/usr/bin/test`,
+`/usr/bin/bash` und einen erlaubten Restic-Pfad aus `/usr/bin/restic` oder
+`/usr/local/bin/restic`, statt vom Root-`PATH` abzuhaengen. Diese Helfer werden
+metadata-only auf Existenz, Symlink-Freiheit, regulaere Datei, `root:root`, Modus,
+Ausfuehrbarkeit und unerwartete Sonderbits geprueft. Die Summary bleibt auf
+Status, Zaehler, kurze Snapshot-ID und Helfermetadaten beschraenkt und meldet
+`helper_binaries=<n>` sowie `restic_binary=<pfad>`. Der Guard laeuft im normalen
 Statuscheck, im systemd-Healthcheck-Preflight und im Backup-Preflight vor
 Dump/Restic.
 

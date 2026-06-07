@@ -811,6 +811,15 @@ scripts/check-backup-scope.py
 scripts/check-backup-scope.py --summary
 ```
 
+Der Guard ist read-only und validiert metadata-only den neuesten BR-Wissen-
+Restic-Snapshot auf erwarteten Host, Tags und Backup-Pfade. Die root-noetige
+Restic-Metadatenabfrage laeuft ueber kuratierte absolute Helferpfade
+(`/usr/bin/sudo`, `/usr/bin/test`, `/usr/bin/bash` und `/usr/bin/restic` oder
+`/usr/local/bin/restic`) statt ueber den Root-`PATH`. Diese Helfer werden auf
+Existenz, Symlink-Freiheit, regulaeren Dateityp, `root:root`, Modus,
+Ausfuehrbarkeit und unerwartete Sonderbits geprueft. Die Summary meldet neben
+`backup_scope_status=ok` auch `helper_binaries=<n>` und `restic_binary=<pfad>`.
+
 Der Guard ist read-only und prueft ausschliesslich Restic-Snapshot-Metadaten des
 neuesten BR-Wissen-Backups auf erwarteten Host, erwartete Tags und den erwarteten
 Backup-Pfadumfang fuer App, internen Datenbereich und Projektprotokoll. Er nutzt

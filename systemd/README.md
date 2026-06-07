@@ -271,7 +271,11 @@ Backup-Scope-Guard prueft zusaetzlich metadata-only, ob der neueste BR-Wissen-
 Restic-Snapshot den erwarteten Host, die erwarteten Tags und den erwarteten
 Backup-Pfadumfang fuer App, internen Datenbereich und Projektprotokoll enthaelt,
 ohne Backups, Restores, Docker, `systemctl`, Imports, Regressionen oder DB-
-Abfragen auszufuehren. Der Backup-Runtime-Policy-Guard prueft zusaetzlich
+Abfragen auszufuehren. Die root-noetige Restic-Snapshot-Metadatenabfrage nutzt
+dabei kuratierte absolute Helferpfade (`/usr/bin/sudo`, `/usr/bin/test`,
+`/usr/bin/bash` und `/usr/bin/restic` oder `/usr/local/bin/restic`) statt eines
+unqualifizierten Root-`PATH`; die Summary meldet `helper_binaries=<n>` und
+`restic_binary=<pfad>`. Der Backup-Runtime-Policy-Guard prueft zusaetzlich
 metadata-only Backup-Env-Datei, Backup-Env-Elternverzeichnis, Restic-Binary und
 installierte Backup-Service-Policy, ohne Backup-Env-Inhalte oder Secretwerte zu
 lesen und ohne Backups, Restores, Docker, Imports, Regressionen oder DB-Abfragen

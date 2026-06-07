@@ -1,6 +1,6 @@
 # BR-Wissen Readiness-Dossier
 
-Stand: 2026-06-07T10:01:54Z
+Stand: 2026-06-07T12:34:15Z
 
 Dieses Dossier fasst den aktuellen Betriebs-, Sicherheits-, Backup-, Restore- und
 Regressionstand fuer `br.m11h.eu` zusammen. Es enthaelt bewusst keine Secretwerte,
@@ -323,7 +323,7 @@ Aktueller Guard-Stand laut read-only Status-/Summary-Pruefungen vom 2026-06-06:
 - Guard-Registry-Integrity: `guard_registry_integrity_status=ok`.
 - Protocol-Integrity-Guard: `protocol_integrity_status=ok`.
 - Git-Remote-Readiness: `git_remote_readiness_status=ok branch=main tracking=1 dirty=0 remote_head_present=1 sensitive_tracked=0 git_user=chris`.
-- Backup-Scope-Guard: `backup_scope_status=ok checks=8 findings=0 snapshots=48 latest_snapshot=2908e56d tags=2 paths=3 expected_paths=3`.
+- Backup-Scope-Guard: `backup_scope_status=ok checks=36 findings=0 snapshots=48 latest_snapshot=c94d3ec9 tags=2 paths=3 expected_paths=3 helper_binaries=4 restic_binary=/usr/bin/restic`.
 - Backup-Runtime-Policy-Guard: `backup_runtime_policy_status=ok checks=27 findings=0 backup_env_mode=600 backup_env_parent_mode=700 restic_mode=755 service_mode=644 service_user_root=1`.
 - Restic-Repository-Check-Freshness: `restic_repository_check_status=ok checks=10 findings=0 last_check=2026-06-06T06:25:14Z age_h=27.8 snapshots=48 documented_success=1 max_age_h=720.0 lock_preflight=0`.
 - Restore-Runtime-Policy-Guard: `restore_runtime_policy_status=ok checks=67 findings=0 backup_env_mode=600 tmp_mode=1777 restic_mode=755 docker_mode=755 service_mode=644 timer_mode=644 service_user_root=1 timer_persistent=1`.
@@ -333,11 +333,11 @@ Aktueller Guard-Stand laut read-only Status-/Summary-Pruefungen vom 2026-06-06:
 - Antwort-/Export-Safety: `answer_export_safety_status=ok checks=29 findings=0 answers_without_statements=0 statements_without_citation=0 html_checked=55 pdf_checked=55`.
 - Audit-Trail: `audit_trail_status=ok checks=11 findings=0 audit_rows=120 answer_create_audit_rows=63 export_audit_rows=49 legacy_export_gaps=8`.
 - DB-Schema: `db_schema_status=ok checks=42 findings=0 tables=9 indexes=32 expected_indexes=23`.
-- Backup-Freshness: `backup_freshness_status=ok checks=112 findings=0 latest_snapshot=2908e56d restic_latest=2908e56d restic_locks=0 restic_stale_locks=0 backup_env_mode=600 helper_binaries=5 python_binary=/usr/bin/python3.13 restic_binary=/usr/bin/restic latest_log_age_h=0.0 latest_dump_age_h=0.0 restic_age_h=0.0 log_count=50 dump_count=20 protocol_snapshot_current=1`.
+- Backup-Freshness: `backup_freshness_status=ok checks=113 findings=0 latest_snapshot=c94d3ec9 restic_latest=c94d3ec9 restic_locks=0 restic_stale_locks=0 backup_env_mode=600 helper_binaries=5 python_binary=/usr/bin/python3.13 restic_binary=/usr/bin/restic latest_log_age_h=0.8 latest_dump_age_h=0.8 restic_age_h=0.8 log_count=50 dump_count=20 protocol_snapshot_current=1`.
 - Storage-Permissions: `storage_permission_status=ok checks=20 findings=0 storage_world_writable=0 storage_symlinks=0 project_secret_candidates=0 sensitive_world_readable=0 cloudflared_json=1`.
 - Storage-Capacity: `storage_capacity_status=ok checks=6 findings=0 min_free_gib=10.4 max_used_pct=20.4 max_inode_pct=4.0 docker_size_gib=16.6 docker_reclaimable_gib=2.9`.
 - Restore-Freshness: `restore_freshness_status=ok checks=83 findings=0 latest_restore_age_h=5.3 log_count=13 restore_snapshot=latest restore_resolved_snapshot=bdc876ca restore_resolved_snapshot_present=1 restore_resolved_snapshot_paths=3 helper_binaries=5 python_binary=/usr/bin/python3.13 self_script_policy=1 self_parent_policy=1 restore_dump=postgres-20260607T025508Z.sql db_restore=ok sql_ready_wait=15 manifests=55`.
-- Readiness-Doku: `readiness_doc_status=ok checks=250 findings=0 stand=2026-06-07T10:01:54Z stand_age_h=0.0 backup_snapshot=2908e56d restore_dump=postgres-20260607T025508Z.sql`.
+- Readiness-Doku: `readiness_doc_status=ok checks=274 findings=0 stand=2026-06-07T12:34:15Z backup_snapshot=c94d3ec9 restore_dump=postgres-20260607T025508Z.sql`.
 - Regression-Freshness: `regression_freshness_status=ok checks=52 findings=0 cases=4 exported_cases=4 max_age_h=203.9 min_age_h=203.9`.
 - Regression-Source-Hardening: `regression_source_hardening_status=ok`.
 - Python-Syntaxcheck: 86 Dateien per AST-Parse geprueft, ohne Bytecode-Artefakte.
@@ -907,6 +907,15 @@ aktuelle Protokollstand ist; die Summary meldet dies als
 `protocol_snapshot_current=1`. Diese Pruefung ist bewusst nicht Teil des Backup-
 Preflights, damit ein neuer Protokollnachtrag das erforderliche Folgebackup nicht
 blockiert.
+
+Der Backup-Scope-Guard `scripts/check-backup-scope.py` nutzt fuer die root-
+noetige Restic-Snapshot-Metadatenabfrage ebenfalls kuratierte absolute Helferpfade
+statt eines unqualifizierten Root-`PATH`: `/usr/bin/sudo`, `/usr/bin/test`,
+`/usr/bin/bash` und einen erlaubten Restic-Pfad aus `/usr/bin/restic` oder
+`/usr/local/bin/restic`. Diese Helfer werden metadata-only auf Existenz,
+Symlink-Freiheit, regulaere Datei, `root:root`, Modus, Ausfuehrbarkeit und
+unerwartete Sonderbits geprueft. Die Summary weist diesen Scope als
+`helper_binaries=4` und aktuell `restic_binary=/usr/bin/restic` aus.
 
 Der Restore-Smoke protokolliert bei `snapshot=latest` zusaetzlich die konkret
 aufgeloeste Restic-Snapshot-ID als `restore_resolved_snapshot=<id>`. Der
