@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Quellenqualität</h1>
+<p class="small">Interne Prüfübersicht. Diese Seite ändert keine Quellen und gibt keine Originaldokumente aus.</p>
+
+<div class="grid">
+  <div class="card"><h2>{{ stats.sources }}</h2><p>Quellen insgesamt</p></div>
+  <div class="card"><h2>{{ stats.documents }}</h2><p>Dokumente insgesamt</p></div>
+  <div class="card"><h2>{{ stats.chunks }}</h2><p>Chunks insgesamt</p></div>
+  <div class="card"><h2>{{ stats.approved_sources }}</h2><p>freigegebene Quellen</p></div>
+  <div class="card"><h2>{{ stats.without_documents }}</h2><p>Quellen ohne Dokument</p></div>
+  <div class="card"><h2>{{ stats.without_chunks }}</h2><p>Quellen ohne Chunks</p></div>
+  <div class="card"><h2>{{ stats.approved_without_chunks }}</h2><p>freigegeben ohne Chunks</p></div>
+  <div class="card"><h2>{{ stats.duplicate_sha_groups }}</h2><p>doppelte Dokument-Prüfsummen</p></div>
+</div>
+
+<div class="warning">
+  <strong>Einordnung:</strong> Auffälligkeiten sind technische Prüfpunkte, keine automatische Sperrentscheidung.
+  Freigegebene Quellen ohne Chunks können z. B. Metadaten-/Sammelquellen sein, sollten aber manuell geprüft werden.
+</div>
+
+<div class="card">
+  <h2>Freigegebene Quellen ohne Chunks</h2>
+  <p class="small">Diese Quellen dürfen formal zitiert werden, liefern aber aktuell keinen Chunk für Antwortgeneratoren.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Quelle</th><th>Klasse</th><th>Typ</th><th>Dokumente</th><th>OCR</th><th>Textstatus</th><th>Textgröße</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for s in approved_without_chunks %}
+        <tr>
+          <td><a href="/sources/{{ s.source_uid }}">{{ s.title }}</a><div class="source-meta">{{ s.source_uid }}</div></td>
+          <td><span class="badge {{ {'GRUEN':'green','BLAU':'blue','GELB':'yellow','GRAU':'gray','ROT':'red'}.get(s.source_class,'gray') }}">{{ s.source_class }}</span></td>
+          <td>{{ s.source_type }}</td>
+          <td>{{ s.document_count }}</td>
+          <td>{{ s.ocr_statuses or '—' }}</td>
+          <td><span class="badge {{ s.text_status_class }}">{{ s.text_status }}</span></td>
+          <td>{% if s.text_size is not none %}{{ s.text_size }} Bytes{% else %}—{% endif %}</td>
+          <td>{{ s.status }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="8">Keine freigegebenen Quellen ohne Chunks gefunden.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Doppelte Dokument-Prüfsummen</h2>
+  <p class="small">Gleiche SHA256-Prüfsumme in mehreren Dokumenteinträgen. Das kann gewollt sein, zeigt aber mögliche Doppelimporte.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>SHA256</th><th>Dokumente</th><th>Quellen</th><th>Beispiele</th></tr></thead>
+      <tbody>
+      {% for d in duplicate_documents %}
+        <tr>
+          <td><code>{{ d.sha256[:16] }}…</code></td>
+          <td>{{ d.document_count }}</td>
+          <td>{{ d.source_count }}</td>
+          <td class="source-meta">{{ d.examples }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="4">Keine doppelten Dokument-Prüfsummen gefunden.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Quellen mit sehr vielen Chunks</h2>
+  <p class="small">Hilft bei Ranking-/Dedupe-Prüfung, weil große Quellen Treffer dominieren können.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Quelle</th><th>Klasse</th><th>Typ</th><th>Dokumente</th><th>Chunks</th></tr></thead>
+      <tbody>
+      {% for s in chunk_heavy_sources %}
+        <tr>
+          <td><a href="/sources/{{ s.source_uid }}">{{ s.title }}</a><div class="source-meta">{{ s.source_uid }}</div></td>
+          <td><span class="badge {{ {'GRUEN':'green','BLAU':'blue','GELB':'yellow','GRAU':'gray','ROT':'red'}.get(s.source_class,'gray') }}">{{ s.source_class }}</span></td>
+          <td>{{ s.source_type }}</td>
+          <td>{{ s.document_count }}</td>
+          <td>{{ s.chunk_count }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5">Keine Chunk-Schwergewichte gefunden.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Dokumente ohne Textpfad oder Chunks</h2>
+  <p class="small">Technische Prüfpunkte für OCR/Text-/Chunking-Nacharbeit.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Dokument</th><th>Quelle</th><th>OCR-Status</th><th>Textstatus</th><th>Textgröße</th><th>Chunks</th></tr></thead>
+      <tbody>
+      {% for d in document_issues %}
+        <tr>
+          <td>{{ d.title }}<div class="source-meta">{{ d.document_uid }}</div></td>
+          <td><a href="/sources/{{ d.source_uid }}">{{ d.source_title }}</a><div class="source-meta">{{ d.source_uid }}</div></td>
+          <td>{{ d.ocr_status }}</td>
+          <td><span class="badge {{ d.text_status_class }}">{{ d.text_status }}</span></td>
+          <td>{% if d.text_size is not none %}{{ d.text_size }} Bytes{% else %}—{% endif %}</td>
+          <td>{{ d.chunk_count }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6">Keine Dokumentprobleme gefunden.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

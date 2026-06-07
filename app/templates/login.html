@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card" style="max-width:32rem">
+  <h1>Geschützter Zugang</h1>
+  <p class="warning">Internes Betriebsrats-Arbeitswerkzeug. Nicht öffentlich. Zugriff nur berechtigt.</p>
+  {% if error %}<p class="warning">{{ error }}</p>{% endif %}
+  <form method="post" action="/login">
+    <label>App-Passwort<br><input type="password" name="password" autocomplete="current-password" required></label>
+    <p><button type="submit">Einloggen</button></p>
+  </form>
+</div>
+{% endblock %}

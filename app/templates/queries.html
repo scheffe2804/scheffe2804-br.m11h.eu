@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Anfragen</h1>
+<p><a href="/queries/new">Neue Anfrage anlegen</a></p>
+{% if queries %}
+<table>
+  <thead><tr><th>Anfrage</th><th>Typ</th><th>Status</th><th>Quellenprofil</th><th>Antworten</th><th>Erstellt</th></tr></thead>
+  <tbody>
+  {% for q in queries %}
+    <tr>
+      <td><a href="/queries/{{ q.query_uid }}">{{ q.title }}</a><br><span class="small">{{ q.query_uid }}</span></td>
+      <td>{{ q.query_type }}</td>
+      <td>{{ q.status }}</td>
+      <td>{{ q.selected_source_profile }}</td>
+      <td>{{ q.answer_count }}</td>
+      <td>{{ q.created_at }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>Noch keine Anfragen vorhanden.</p>
+{% endif %}
+{% endblock %}

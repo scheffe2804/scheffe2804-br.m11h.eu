@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+  <title>{{ title }}</title>
+  <style>
+    :root { color-scheme: light dark; --border:#9ca3af; --bg:#f8fafc; --fg:#111827; --muted:#4b5563; --card:#ffffff; }
+    @media (prefers-color-scheme: dark) { :root { --bg:#0f172a; --fg:#e5e7eb; --muted:#cbd5e1; --card:#111827; --border:#334155; } }
+    body { margin:0; font-family:system-ui,-apple-system,Segoe UI,sans-serif; background:var(--bg); color:var(--fg); }
+    header { padding:1rem 1.5rem; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+    nav { width:16rem; padding:1rem; border-right:1px solid var(--border); min-height:calc(100vh - 4rem); }
+    main { padding:1.5rem; max-width:80rem; }
+    .layout { display:flex; }
+    a { color:#2563eb; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:.75rem; padding:1rem; margin:.75rem 0; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(14rem,1fr)); gap:1rem; }
+    .badge { display:inline-block; padding:.15rem .45rem; border-radius:.4rem; border:1px solid var(--border); font-size:.85rem; }
+    .green{background:#dcfce7;color:#14532d}.blue{background:#dbeafe;color:#1e3a8a}.yellow{background:#fef9c3;color:#713f12}.gray{background:#e5e7eb;color:#111827}.red{background:#fee2e2;color:#7f1d1d}
+    table { width:100%; border-collapse:collapse; } th,td { border-bottom:1px solid var(--border); padding:.5rem; text-align:left; vertical-align:top; }
+    .table-wrap { max-width:100%; overflow-x:auto; }
+    .source-table { table-layout:fixed; font-size:.92rem; }
+    .source-table th:nth-child(1), .source-table td:nth-child(1) { width:2.5rem; text-align:center; }
+    .source-table th:nth-child(2), .source-table td:nth-child(2) { width:44%; }
+    .source-table th:nth-child(3), .source-table td:nth-child(3) { width:6rem; }
+    .source-table th:nth-child(4), .source-table td:nth-child(4) { width:7rem; }
+    .source-table th:nth-child(5), .source-table td:nth-child(5) { width:5rem; text-align:right; }
+    .source-table th:nth-child(6), .source-table td:nth-child(6) { width:9rem; }
+    .source-title { font-weight:600; overflow-wrap:anywhere; }
+    .source-meta { color:var(--muted); font-size:.82rem; overflow-wrap:anywhere; }
+    .ok { color:#16a34a; font-weight:800; font-size:1.25rem; }
+    .no { color:var(--muted); }
+    tr:target { outline:3px solid #16a34a; outline-offset:-3px; background:rgba(22,163,74,.12); }
+    input,textarea,select,button { font:inherit; padding:.55rem; border-radius:.45rem; border:1px solid var(--border); }
+    textarea { min-height:10rem; width:100%; } input,select { width:100%; box-sizing:border-box; }
+    button { cursor:pointer; }
+    .warning { border-left:4px solid #b91c1c; padding:.75rem; background:rgba(185,28,28,.08); }
+    .small { color:var(--muted); font-size:.9rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <strong>{{ title }}</strong>
+    {% if user %}<form method="post" action="/logout"><input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}"><button>Logout {{ user }}</button></form>{% endif %}
+  </header>
+  <div class="layout">
+    {% if user %}
+    <nav>
+      <p><a href="/">Dashboard</a></p>
+      <p><a href="/sources">Quellenbibliothek</a></p>
+      <p><a href="/source-quality">Quellenqualität</a></p>
+      <p><a href="/search">Suche</a></p>
+      <p><a href="/queries">Anfragen</a></p>
+      <p><a href="/queries/new">Neue Anfrage</a></p>
+      <p><a href="/answers">Antworten</a></p>
+      <p><a href="/validation">Validator</a></p>
+      <p><a href="/security-rules">Quellen-/Sicherheitsregeln</a></p>
+      <hr>
+      <p class="small">Keine Angabe ohne Quelle. Neutral. Nicht öffentlich.</p>
+    </nav>
+    {% endif %}
+    <main>{% block content %}{% endblock %}</main>
+  </div>
+</body>
+</html>

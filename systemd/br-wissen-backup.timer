@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily BR Wissensdatenbank encrypted backup
+
+[Timer]
+OnCalendar=*-*-* 04:47:00
+Persistent=true
+RandomizedDelaySec=30m
+
+[Install]
+WantedBy=timers.target

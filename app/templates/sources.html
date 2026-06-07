@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Quellenbibliothek</h1>
+<p>Neue Quellen sind nicht automatisch freigegeben. Nur freigegebene Quellen dürfen für fachliche Antworten genutzt werden.</p>
+<form method="get" action="/sources" class="card">
+  <h2>Quellen filtern</h2>
+  <label>Suchbegriff<br><input name="q" value="{{ q }}" placeholder="Titel, ID, Typ oder interne Referenz"></label>
+  <div class="grid">
+    <label>Quellenklasse<br>
+      <select name="source_class">
+        <option value="ALL" {% if source_class == 'ALL' %}selected{% endif %}>Alle Klassen</option>
+        <option value="GRUEN" {% if source_class == 'GRUEN' %}selected{% endif %}>GRÜN – amtlich</option>
+        <option value="BLAU" {% if source_class == 'BLAU' %}selected{% endif %}>BLAU – Tarif/intern</option>
+        <option value="GELB" {% if source_class == 'GELB' %}selected{% endif %}>GELB – Hinweis</option>
+        <option value="GRAU" {% if source_class == 'GRAU' %}selected{% endif %}>GRAU – Entwurf</option>
+        <option value="ROT" {% if source_class == 'ROT' %}selected{% endif %}>ROT – unklar/gesperrt</option>
+      </select>
+    </label>
+    <label>Freigabe<br>
+      <select name="approval">
+        <option value="all" {% if approval == 'all' %}selected{% endif %}>Alle Quellen</option>
+        <option value="approved" {% if approval == 'approved' %}selected{% endif %}>Nur freigegebene Quellen</option>
+        <option value="not_approved" {% if approval == 'not_approved' %}selected{% endif %}>Nicht freigegeben, nicht gesperrt</option>
+        <option value="blocked" {% if approval == 'blocked' %}selected{% endif %}>Nur gesperrte Quellen</option>
+      </select>
+    </label>
+    <label>Quellentyp<br>
+      <select name="source_type_group">
+        {% for option in source_type_options %}
+          <option value="{{ option.value }}" {% if source_type_group == option.value %}selected{% endif %}>{{ option.label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </div>
+  <p><button type="submit">Quellen filtern</button> <a href="/sources">Filter zurücksetzen</a></p>
+</form>
+<form method="post" action="/sources/approve-evg-all" class="card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+  <h2>EVG-/Tailshare-Quellen</h2>
+  <p>Gibt alle importierten EVG-/Tailshare-Quellen technisch frei. Sie bleiben intern und nicht öffentlich.</p>
+  <button type="submit">Alle EVG-/Tailshare-Quellen freigeben</button>
+</form>
+<p class="small">Angezeigte Quellen: {{ sources|length }}{% if sources|length == 500 %} (Limit 500 erreicht; bitte Filter nutzen){% endif %}</p>
+<div class="table-wrap">
+<table class="source-table">
+  <thead><tr><th>✓</th><th>Quelle</th><th>Klasse</th><th>Status</th><th>Chunks</th><th>Aktion</th></tr></thead>
+  <tbody>
+  {% for s in sources %}
+    <tr id="source-{{ s.source_uid }}">
+      <td>{% if s.citation_allowed %}<span class="ok" title="freigegeben">✓</span>{% else %}<span class="no">—</span>{% endif %}</td>
+      <td>
+        <div class="source-title"><a href="/sources/{{ s.source_uid }}">{{ s.title }}</a></div>
+        <div class="source-meta">{{ s.source_uid }}</div>
+        <div class="source-meta">{{ s.source_type }}{% if s.public_url %} · <a href="{{ s.public_url }}" rel="noreferrer">öffentliche Quelle</a>{% elif s.internal_ref %} · {{ safe_reference(s.internal_ref) }}{% endif %}</div>
+      </td>
+      <td><span class="badge {{ {'GRUEN':'green','BLAU':'blue','GELB':'yellow','GRAU':'gray','ROT':'red'}.get(s.source_class,'gray') }}">{{ s.source_class }}</span></td>
+      <td>{{ s.status }}</td>
+      <td>{{ s.chunk_count }}</td>
+      <td>
+        {% if s.status == 'gesperrt' %}
+          <form method="post" action="/sources/{{ s.source_uid }}/unblock"><input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}"><button>entsperren</button></form>
+          <form method="post" action="/sources/{{ s.source_uid }}/unblock-and-approve"><input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}"><button>entsperren + freigeben</button></form>
+        {% elif not s.citation_allowed %}
+          <form method="post" action="/sources/{{ s.source_uid }}/technical-approve"><input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}"><button>technisch freigeben</button></form>
+        {% endif %}
+        {% if s.status != 'gesperrt' %}
+          <form method="post" action="/sources/{{ s.source_uid }}/block"><input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}"><button>sperren</button></form>
+        {% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

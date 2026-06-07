@@ -1,0 +1,9 @@
+# Beispiel. Die echte Tunnel-Konfiguration wird erst nach Cloudflare-Einrichtung erstellt.
+# Keine Tokens oder Credentials in Git/Markdown speichern.
+tunnel: br-m11h-eu
+credentials-file: /run/br-secrets/cloudflared/br-m11h-eu.json
+
+ingress:
+  - hostname: br.m11h.eu
+    service: http://proxy:8080
+  - service: http_status:404

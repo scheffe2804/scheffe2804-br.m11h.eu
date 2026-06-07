@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Antworten</h1>
+<div class="warning">
+  <strong>Exportregel:</strong> HTML/PDF-Export ist nur zulässig, wenn jede Aussage mindestens eine direkte Citation hat.
+</div>
+{% if answers %}
+<table>
+  <thead><tr><th>Antwort</th><th>Anfrage</th><th>Status</th><th>Validator</th><th>Export</th><th>Erstellt</th></tr></thead>
+  <tbody>
+  {% for a in answers %}
+    <tr>
+      <td><a href="/answers/{{ a.answer_uid }}">{{ a.answer_uid }}</a></td>
+      <td><a href="/queries/{{ a.query_uid }}">{{ a.title }}</a></td>
+      <td>{{ a.status }}</td>
+      <td>{{ a.statement_count }} Aussagen · {{ a.citation_count }} Citations · {{ a.statements_without_citation or 0 }} ohne Citation</td>
+      <td>{% if a.html_path or a.pdf_path %}erzeugt{% else %}noch nicht erzeugt{% endif %}</td>
+      <td>{{ a.created_at }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>Noch keine Antworten vorhanden.</p>
+{% endif %}
+{% endblock %}

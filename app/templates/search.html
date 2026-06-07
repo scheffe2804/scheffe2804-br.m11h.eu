@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Suche</h1>
+<form method="get" action="/search" class="card">
+  <label>Suchbegriff<br><input name="q" value="{{ q }}" autofocus></label>
+  <div class="grid">
+    <label>Quellenklasse<br>
+      <select name="source_class">
+        <option value="ALL" {% if source_class == 'ALL' %}selected{% endif %}>Alle Klassen</option>
+        <option value="GRUEN" {% if source_class == 'GRUEN' %}selected{% endif %}>GRÜN – amtlich</option>
+        <option value="BLAU" {% if source_class == 'BLAU' %}selected{% endif %}>BLAU – Tarif/intern</option>
+        <option value="GELB" {% if source_class == 'GELB' %}selected{% endif %}>GELB – Hinweis</option>
+        <option value="GRAU" {% if source_class == 'GRAU' %}selected{% endif %}>GRAU – Entwurf</option>
+        <option value="ROT" {% if source_class == 'ROT' %}selected{% endif %}>ROT – unklar/gesperrt</option>
+      </select>
+    </label>
+    <label>Freigabe<br>
+      <select name="approval">
+        <option value="approved" {% if approval == 'approved' %}selected{% endif %}>Nur freigegebene Quellen</option>
+        <option value="all" {% if approval == 'all' %}selected{% endif %}>Alle Quellen</option>
+        <option value="blocked" {% if approval == 'blocked' %}selected{% endif %}>Nur gesperrte Quellen</option>
+      </select>
+    </label>
+    <label>Quellentyp<br>
+      <select name="source_type_group">
+        {% for option in source_type_options %}
+          <option value="{{ option.value }}" {% if source_type_group == option.value %}selected{% endif %}>{{ option.label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </div>
+  <p><button type="submit">Suchen</button></p>
+</form>
+<div class="warning">Suchtreffer sind nur Kandidaten. Keine Aussage ohne direkte Quelle und Freigabe. Nicht freigegebene Quellen dürfen noch nicht für fachliche Antworten genutzt werden.</div>
+{% if results %}
+  <h2>Treffer</h2>
+  {% for r in results %}
+    <div class="card">
+      <p>
+        {% if r.citation_allowed %}<span class="ok">✓</span>{% else %}<span class="no">—</span>{% endif %}
+        <span class="badge {{ {'GRUEN':'green','BLAU':'blue','GELB':'yellow','GRAU':'gray','ROT':'red'}.get(r.source_class,'gray') }}">{{ r.source_class }}</span>
+        <strong>{{ r.citation_label }}</strong>
+      </p>
+      <p class="small">Quelle: {{ r.source_title }} · {{ r.source_uid }} · {{ r.source_type }} · Status: {{ r.status }} · {{ safe_reference(r.internal_ref) }}</p>
+      <p><em>{{ r.heading }}</em></p>
+      <p style="white-space:pre-wrap">{{ r.snippet }}</p>
+    </div>
+  {% endfor %}
+{% elif q %}
+  <p>Keine Treffer.</p>
+{% endif %}
+{% endblock %}

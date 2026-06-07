@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+  <title>{{ answer.title }} – quellengeprüfter Export</title>
+  <!-- br-export-id: {{ answer.answer_uid }} fingerprint: {{ answer.fingerprint }} -->
+  <style>
+    body { font-family: DejaVu Sans, sans-serif; line-height:1.45; color:#111827; }
+    .watermark { border:3px solid #991b1b; padding:1rem; margin-bottom:1rem; color:#7f1d1d; }
+    .meta { font-size:.9rem; color:#374151; }
+    .section { margin:1.25rem 0; padding-top:.5rem; border-top:1px solid #d1d5db; }
+    .statement { border:1px solid #d1d5db; padding:.75rem; margin:.75rem 0; }
+    .source { background:#ecfdf5; border-left:4px solid #166534; padding:.5rem; margin-top:.5rem; }
+    .badge { display:inline-block; padding:.1rem .35rem; border:1px solid #6b7280; border-radius:.25rem; }
+    .green { background:#dcfce7; }
+    .blue { background:#dbeafe; }
+    .yellow { background:#fef9c3; }
+    @page { margin: 18mm; @bottom-right { content: "Export {{ answer.answer_uid }} · intern · Seite " counter(page) " / " counter(pages); font-size:8pt; } }
+  </style>
+</head>
+<body>
+  <div class="watermark">
+    <strong>Internes Arbeitsdokument – nicht öffentlich.</strong><br>
+    Quellengeprüfter Export: Jede enthaltene Aussage hat eine direkte Citation.<br>
+    Keine Rechtsberatung. Keine freie KI-Auslegung. Keine Angabe ohne Quelle.<br>
+    Antwort-ID: {{ answer.answer_uid }} · Fingerprint: {{ answer.fingerprint }}
+  </div>
+  <h1>{{ answer.title }}</h1>
+  <p class="meta">Anfrage-ID: {{ answer.query_uid }} · Erstellt: {{ created_at }} · Status: {{ answer.status }}</p>
+  <p class="meta">Validator: Aussagen {{ validation.statement_count }} · Citations {{ validation.citation_count }} · Aussagen ohne Citation {{ validation.statements_without_citation }}</p>
+  <div class="section"><h2>Frage</h2><p style="white-space:pre-wrap">{{ answer.question }}</p></div>
+  <div class="section">
+    <h2>Amtliche Treffer mit direkter Quelle</h2>
+    {% for s in statements %}
+      <div class="statement">
+        <p style="white-space:pre-wrap">{{ s.statement_text }}</p>
+        <div class="source">
+          <strong>Quelle direkt zur Aussage:</strong>
+          <span class="badge {% if s.source_class == 'BLAU' %}blue{% elif s.source_class == 'GELB' %}yellow{% else %}green{% endif %}">{{ s.source_class }}</span>
+          {% if s.citation_url %}{{ s.citation_label }} – {{ s.citation_url }}{% else %}{{ s.citation_label }}{% endif %}
+          {% if s.source_uid %}<br><strong>Interne Quellenakte:</strong> {{ s.source_title or s.source_uid }} – {{ s.source_uid }}{% if s.source_type %} – {{ s.source_type }}{% endif %}{% if s.locator %} – {{ s.locator }}{% endif %}{% if s.chunk_uid %} – Chunk {{ s.chunk_uid }}{% endif %}{% elif s.internal_ref %}<br><strong>Interne Referenz:</strong> {{ safe_reference(s.internal_ref) }}{% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  <div class="section"><h2>Nicht geprüfte Bereiche</h2><p>Tarifquellen, Rechtsprechung und Hinweisquellen werden in diesem Antworttyp nicht frei ergänzt. Wenn sie relevant sind, muss eine gesonderte quellengebundene Prüfung erzeugt werden.</p></div>
+  <div class="section"><h2>Hinweisquellen / Gesetzesentwürfe</h2><p>In diesem Export nicht verwendet.</p></div>
+  <div class="section"><h2>Neutrale Prüfpunkte</h2><p>Für eine fachliche Bewertung sind ggf. weitere offizielle Quellen, Tarifquellen oder Rechtsprechung gezielt zu prüfen.</p></div>
+</body>
+</html>

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Neue Anfrage</h1>
+<form method="post" action="/queries" class="card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+  <label>Titel<br><input name="title" required></label><br><br>
+  <label>Typ<br>
+    <select name="query_type">
+      <option value="allgemein">Allgemeine Frage</option>
+      <option value="fall">Konkreter Fall</option>
+      <option value="urteilssuche">Urteil suchen</option>
+      <option value="gesetzesaenderung">Gesetzesänderung beobachten</option>
+    </select>
+  </label><br><br>
+  <label>Quellenprofil<br>
+    <select name="selected_source_profile">
+      <option value="streng_amtlich">Streng amtlich: Gesetze + offizielle Rechtsprechung</option>
+      <option value="tariffrage_db_evg">Tariffrage DB/EVG: GRÜN + BLAU</option>
+      <option value="gruen_blau">Quellengebunden: GRÜN + BLAU</option>
+      <option value="allgemeine_recherche">Allgemeine Recherche mit Hinweisquellen unten</option>
+      <option value="gesetzesaenderungen">Geltendes Recht + Entwürfe unten</option>
+      <option value="konkreter_fall">Konkreter Fall mit Fallakte</option>
+    </select>
+  </label><br><br>
+  <label>Frage<br><textarea name="question" required></textarea></label>
+  <p class="small">Diese Version speichert die Anfrage. KI-Antworten werden erst nach Quellen-/Validator-Pipeline aktiviert.</p>
+  <button type="submit">Anfrage speichern</button>
+</form>
+{% endblock %}

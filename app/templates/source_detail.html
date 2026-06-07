@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block content %}
+<p><a href="/sources">← Zur Quellenbibliothek</a></p>
+<h1>{{ source.title }}</h1>
+<div class="card">
+  <p>
+    {% if source.citation_allowed %}<span class="ok">✓</span>{% else %}<span class="no">—</span>{% endif %}
+    <span class="badge {{ {'GRUEN':'green','BLAU':'blue','GELB':'yellow','GRAU':'gray','ROT':'red'}.get(source.source_class,'gray') }}">{{ source.source_class }}</span>
+    <strong>{{ source.status }}</strong>
+  </p>
+  <p class="small">ID: {{ source.source_uid }}</p>
+  <p class="small">Typ: {{ source.source_type }} · Vertraulichkeit: {{ source.confidentiality }} · Dokumente: {{ source.document_count }} · Chunks: {{ source.chunk_count }}</p>
+  <p class="small">{% if source.public_url %}<a href="{{ source.public_url }}" rel="noreferrer">öffentliche Fundstelle</a>{% else %}{{ safe_reference(source.internal_ref) or 'interne Quelle' }}{% endif %}</p>
+  <p class="small">Speicherort: geschützter interner Speicherbereich</p>
+</div>
+
+{% if source_metadata_items %}
+<div class="card">
+  <h2>Quellenmetadaten</h2>
+  <table>
+    <tbody>
+    {% for item in source_metadata_items %}
+      <tr><th>{{ item.label }}</th><td>{{ item.value }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<div class="card">
+  <h2>Aktionen</h2>
+  {% if source.status == 'gesperrt' %}
+    <form method="post" action="/sources/{{ source.source_uid }}/unblock"><input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}"><button>entsperren</button></form>
+    <form method="post" action="/sources/{{ source.source_uid }}/unblock-and-approve"><input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}"><button>entsperren + freigeben</button></form>
+  {% elif not source.citation_allowed %}
+    <form method="post" action="/sources/{{ source.source_uid }}/technical-approve"><input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}"><button>technisch freigeben</button></form>
+  {% endif %}
+  {% if source.status != 'gesperrt' %}
+    <form method="post" action="/sources/{{ source.source_uid }}/block"><input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}"><button>sperren</button></form>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Dokumente</h2>
+  {% if documents %}
+    <ul>
+    {% for d in documents %}
+      <li><strong>{{ d.title }}</strong><br><span class="small">{{ d.document_uid }} · OCR/Text: {{ d.ocr_status }} · Speicherort: geschützter interner Speicherbereich</span></li>
+    {% endfor %}
+    </ul>
+  {% else %}
+    <p>Keine Dokumente registriert.</p>
+  {% endif %}
+</div>
+
+<form method="get" action="/sources/{{ source.source_uid }}" class="card">
+  <h2>In dieser Quelle suchen</h2>
+  <label>Suchbegriff<br><input name="q" value="{{ q }}"></label>
+  <p><button type="submit">In Quelle suchen</button></p>
+</form>
+
+<h2>Quellenauszüge{% if q %} für „{{ q }}“{% endif %}</h2>
+{% if chunks %}
+  {% for c in chunks %}
+    <div class="card">
+      <p><span class="badge {{ {'GRUEN':'green','BLAU':'blue','GELB':'yellow','GRAU':'gray','ROT':'red'}.get(c.source_class,'gray') }}">{{ c.source_class }}</span> <strong>{{ c.citation_label }}</strong></p>
+      <p class="small">{{ c.document_title }} · {{ c.locator }} · {{ safe_reference(c.internal_ref) }}</p>
+      <p><em>{{ c.heading }}</em></p>
+      <p style="white-space:pre-wrap">{{ c.snippet }}</p>
+    </div>
+  {% endfor %}
+{% else %}
+  <p>Keine Chunks/Treffer in dieser Quelle.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+  <title>{{ query.title }} – Entwurfs-Export</title>
+  <!-- br-export-id: {{ answer_uid }} fingerprint: {{ fingerprint }} -->
+  <style>
+    body { font-family: DejaVu Sans, sans-serif; line-height:1.45; color:#111827; }
+    .watermark { border:3px solid #991b1b; padding:1rem; margin-bottom:1rem; color:#7f1d1d; }
+    .meta { font-size:.9rem; color:#374151; }
+    .section { margin:1.25rem 0; padding-top:.5rem; border-top:1px solid #d1d5db; }
+    .badge { display:inline-block; padding:.1rem .35rem; border:1px solid #6b7280; border-radius:.25rem; }
+    .blue { background:#dbeafe; } .green { background:#dcfce7; } .yellow { background:#fef9c3; } .gray { background:#e5e7eb; } .red { background:#fee2e2; }
+    @page { margin: 18mm; @bottom-right { content: "Export {{ answer_uid }} · intern · Seite " counter(page) " / " counter(pages); font-size:8pt; } }
+  </style>
+</head>
+<body>
+  <div class="watermark">
+    <strong>Internes Arbeitsdokument – nicht öffentlich.</strong><br>
+    Keine Angabe ohne Quelle. Dieser Export ist ein Entwurf und keine Rechtsberatung.<br>
+    Export-ID: {{ answer_uid }} · Fingerprint: {{ fingerprint }}
+  </div>
+  <h1>{{ query.title }}</h1>
+  <p class="meta">Anfrage-ID: {{ query.query_uid }} · Erstellt: {{ created_at }} · Status: Entwurf</p>
+  <div class="section">
+    <h2>Frage</h2>
+    <p style="white-space:pre-wrap">{{ query.question }}</p>
+  </div>
+  <div class="section">
+    <h2>Kurzantwort</h2>
+    <p>Dieser Entwurfs-Export enthält noch keine KI-generierte fachliche Antwort. Die Antwortgenerierung bleibt blockiert, bis Quellenvalidator und direkte Quellenzuordnung aktiv sind.</p>
+  </div>
+  <div class="section">
+    <h2>Freigegebener Quellenstand</h2>
+    {% if sources %}
+      <ul>
+      {% for s in sources %}
+        <li><span class="badge {{ {'GRUEN':'green','BLAU':'blue','GELB':'yellow','GRAU':'gray','ROT':'red'}.get(s.source_class,'gray') }}">{{ s.source_class }}</span>
+          {{ s.title }} – Status: {{ s.status }} – {% if s.public_url %}{{ s.public_url }}{% else %}{{ safe_reference(s.internal_ref) }}{% endif %}</li>
+      {% endfor %}
+      </ul>
+    {% else %}
+      <p>Keine freigegebenen Quellen vorhanden.</p>
+    {% endif %}
+  </div>
+  <div class="section"><h2>Nicht belegte Punkte / offene Fragen</h2><p>Fachliche Einordnung noch nicht erzeugt.</p></div>
+  <div class="section"><h2>Hinweisquellen / Gesetzesentwürfe</h2><p>Keine in diesem Entwurf verwendet.</p></div>
+  <div class="section"><h2>Neutrale Prüfpunkte</h2><p>Vor einer fachlichen Antwort müssen Quellen direkt an Aussagen gebunden und validiert werden.</p></div>
+</body>
+</html>

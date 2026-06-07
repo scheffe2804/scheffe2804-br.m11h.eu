@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Dashboard</h1>
+<div class="warning">
+  <strong>Verbindliche Regel:</strong> Keine Angabe ohne Quelle. Jede Quelle steht direkt bei der Aussage. Hinweisquellen und Entwürfe sind getrennt.
+</div>
+<div class="grid">
+  <div class="card"><h2>{{ counts.sources }}</h2><p>Quellen</p></div>
+  <div class="card"><h2>{{ counts.queries }}</h2><p>Anfragen</p></div>
+  <div class="card"><h2>{{ counts.answers }}</h2><p>Antworten</p></div>
+  <div class="card"><h2>{{ counts.cases }}</h2><p>Fälle</p></div>
+</div>
+<div class="card">
+  <h2>Schutzstatus</h2>
+  <ul>
+    <li>Cloudflare Access ist für <code>br.m11h.eu</code> vorgeschaltet.</li>
+    <li>Basic Auth im Caddy-Proxy ist aktiv.</li>
+    <li>Zusätzlicher App-Login aktiv.</li>
+    <li>Noindex-/Noarchive-Header aktiv.</li>
+    <li>Dokumente liegen außerhalb des Webroots in einem geschützten internen Speicherbereich.</li>
+  </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ answer.title }}</h1>
+<p><strong>Antwort-ID:</strong> {{ answer.answer_uid }} · <strong>Status:</strong> {{ answer.status }} · <strong>Fingerprint:</strong> {{ answer.fingerprint }}</p>
+<p><strong>Validator:</strong> Aussagen {{ validation.statement_count }} · Citations {{ validation.citation_count }} · ohne Citation {{ validation.statements_without_citation }}</p>
+{% if answer.html_path or answer.pdf_path %}
+<div class="card"><h2>Export</h2><p>HTML/PDF wurde serverseitig erzeugt und liegt geschützt unter der internen Export-ID. Keine öffentlichen Direktlinks.</p></div>
+{% endif %}
+<div class="card"><h2>Frage</h2><p style="white-space:pre-wrap">{{ answer.question }}</p></div>
+<div class="warning">
+  Diese Antwort enthält nur Quellentreffer mit direkter Citation. Sie ist keine freie Rechtsberatung und keine KI-Auslegung.
+  {% if 'BLAU' in source_classes %}Sie enthält auch freigegebene interne/offizielle Tarifquellen.{% else %}Sie enthält nur amtliche Quellen.{% endif %}
+</div>
+<div class="card">
+  <h2>Nicht geprüfte Bereiche</h2>
+  <p>{% if 'BLAU' in source_classes %}GELBE Hinweisquellen, nicht freigegebene Quellen und nicht gefundene Rechtsprechung werden nicht frei ergänzt.{% else %}Tarifquellen, Rechtsprechung und Hinweisquellen werden in diesem Antworttyp nicht frei ergänzt. Wenn sie relevant sind, muss eine gesonderte quellengebundene Prüfung erzeugt werden.{% endif %}</p>
+</div>
+<form method="post" action="/answers/{{ answer.answer_uid }}/export" class="card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+  <h2>Quellengeprüften Export erzeugen</h2>
+  <p>Export wird blockiert, wenn eine Aussage ohne Citation vorhanden ist.</p>
+  <button type="submit">HTML/PDF erzeugen</button>
+</form>
+{% for s in statements %}
+  <div class="card">
+    <p><strong>{{ s.section }}</strong></p>
+    <p style="white-space:pre-wrap">{{ s.statement_text }}</p>
+    <p><strong>Quelle direkt zur Aussage:</strong>
+      <span class="badge {{ {'GRUEN':'green','BLAU':'blue','GELB':'yellow','GRAU':'gray','ROT':'red'}.get(s.source_class,'gray') }}">{{ s.source_class }}</span>
+      {% if s.citation_url %}<a href="{{ s.citation_url }}" rel="noreferrer">{{ s.citation_label }}</a>{% else %}{{ s.citation_label }}{% endif %}
+    </p>
+    {% if s.source_uid %}
+      <p class="small"><strong>Interne Quellenakte:</strong> <a href="/sources/{{ s.source_uid }}">{{ s.source_title or s.source_uid }}</a> · {{ s.source_uid }}{% if s.source_type %} · {{ s.source_type }}{% endif %}{% if s.locator %} · {{ s.locator }}{% endif %}{% if s.chunk_uid %} · Chunk {{ s.chunk_uid }}{% endif %}</p>
+    {% elif s.internal_ref %}
+      <p class="small"><strong>Interne Referenz:</strong> {{ safe_reference(s.internal_ref) }}</p>
+    {% endif %}
+  </div>
+{% endfor %}
+{% endblock %}

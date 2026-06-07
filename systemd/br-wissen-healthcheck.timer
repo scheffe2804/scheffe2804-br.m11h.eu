@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily BR Wissensdatenbank read-only healthcheck
+
+[Timer]
+OnCalendar=*-*-* 04:12:00
+Persistent=true
+RandomizedDelaySec=15m
+
+[Install]
+WantedBy=timers.target

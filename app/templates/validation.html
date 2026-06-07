@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Validator</h1>
+<div class="warning">
+  <strong>Regel:</strong> Eine Antwort darf erst als quellengeprüft gelten, wenn jede Aussage mindestens eine direkte Citation hat.
+</div>
+{% if answers %}
+<table>
+  <thead><tr><th>Antwort</th><th>Status</th><th>Aussagen</th><th>Citations</th><th>Aussagen ohne Citation</th><th>Bewertung</th></tr></thead>
+  <tbody>
+  {% for a in answers %}
+    <tr>
+      <td><a href="/answers/{{ a.answer_uid }}">{{ a.answer_uid }}</a></td>
+      <td>{{ a.status }}</td>
+      <td>{{ a.statement_count }}</td>
+      <td>{{ a.citation_count }}</td>
+      <td>{{ a.statements_without_citation }}</td>
+      <td>{% if a.statement_count == 0 %}Entwurf ohne fachliche Aussagen{% elif a.statements_without_citation == 0 %}formal zitierfähig{% else %}<strong>blockieren</strong>{% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>Noch keine Antworten vorhanden.</p>
+{% endif %}
+{% endblock %}

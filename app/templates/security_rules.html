@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Quellen- und Sicherheitsregeln</h1>
+<div class="card">
+  <h2>Absolute Regeln</h2>
+  <ul>
+    <li>Keine Angabe ohne Quelle.</li>
+    <li>Quelle direkt bei der Aussage.</li>
+    <li>Keine erfundenen Gesetze, Urteile, Fristen, Tarifregelungen.</li>
+    <li>Neutral: nicht EVG-freundlich, nicht arbeitgeberfreundlich, nicht parteiisch.</li>
+    <li>Hinweisquellen und Gesetzesentwürfe nur getrennt unten.</li>
+    <li>Interne Quellen nicht öffentlich, nicht indexierbar, nicht direkt downloadbar.</li>
+  </ul>
+</div>
+<div class="card">
+  <h2>Quellenklassen</h2>
+  <p><span class="badge green">GRUEN</span> amtliches Recht / offizielle Rechtsprechung</p>
+  <p><span class="badge blue">BLAU</span> interne/offizielle Tarifquellen</p>
+  <p><span class="badge yellow">GELB</span> Hinweisquellen, nie Rechtsgrundlage</p>
+  <p><span class="badge gray">GRAU</span> Gesetzesentwürfe, nicht geltendes Recht</p>
+  <p><span class="badge red">ROT</span> gesperrt/unklar/nicht verwendbar</p>
+</div>
+{% endblock %}

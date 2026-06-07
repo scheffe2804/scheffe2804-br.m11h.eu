@@ -1,0 +1,10 @@
+[Unit]
+Description=Weekly BR Wissensdatenbank automated restore-smoke drill
+
+[Timer]
+OnCalendar=Sun *-*-* 06:10:00
+Persistent=true
+RandomizedDelaySec=45m
+
+[Install]
+WantedBy=timers.target

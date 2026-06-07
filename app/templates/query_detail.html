@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ query.title }}</h1>
+<p><strong>Status:</strong> {{ query.status }} · <strong>Quellenprofil:</strong> {{ query.selected_source_profile }} · <strong>ID:</strong> {{ query.query_uid }}</p>
+<div class="card"><h2>Frage</h2><p style="white-space:pre-wrap">{{ query.question }}</p></div>
+<div class="warning">Freie KI-Auswertung bleibt blockiert. Aktiv sind nur quellengebundene Generatoren mit direkter Citation-Pflicht.</div>
+<form method="post" action="/queries/{{ query.query_uid }}/recommended-answer" class="card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+  <h2>Empfohlene Antwort erzeugen</h2>
+  <p>{{ recommendation.label }}</p>
+  {% if recommendation.mode == "unsupported" %}
+    <p class="warning">Dieses Quellenprofil braucht noch eine eigene sichere Pipeline. Bitte unten bewusst einen manuellen Generator wählen oder das Quellenprofil der Anfrage anpassen.</p>
+    <button type="submit" disabled>Kein empfohlener Generator aktiv</button>
+  {% else %}
+    <p class="small">Die Auswahl erfolgt automatisch anhand des Quellenprofils. Jede gespeicherte Aussage muss eine direkte Citation erhalten.</p>
+    <button type="submit">Empfohlene Antwort erzeugen</button>
+  {% endif %}
+</form>
+{% if answers %}
+<div class="card">
+  <h2>Vorhandene Antworten</h2>
+  <table>
+    <thead><tr><th>Antwort</th><th>Status</th><th>Validator</th><th>Export</th></tr></thead>
+    <tbody>
+    {% for a in answers %}
+      <tr>
+        <td><a href="/answers/{{ a.answer_uid }}">{{ a.answer_uid }}</a></td>
+        <td>{{ a.status }}</td>
+        <td>{{ a.statement_count }} Aussagen · {{ a.citation_count }} Citations · {{ a.statements_without_citation or 0 }} ohne Citation</td>
+        <td>{% if a.html_path or a.pdf_path %}erzeugt{% else %}noch nicht erzeugt{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+<form method="post" action="/queries/{{ query.query_uid }}/draft-export" class="card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+  <h2>Entwurfs-Export</h2>
+  <p>Erzeugt einen geschützten HTML/PDF-Entwurf mit Wasserzeichen/Fingerprint und Quellenstand. Fachliche Aussagen werden nicht frei formuliert.</p>
+  <button type="submit">HTML/PDF-Entwurf erzeugen</button>
+</form>
+<form method="post" action="/queries/{{ query.query_uid }}/source-snippet-answer" class="card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+  <h2>Manuell: quellengebundene Trefferantwort</h2>
+  <p>Erzeugt eine Antwort nur aus freigegebenen amtlichen Quellen. Keine freie KI-Auslegung, keine Aussage ohne Citation.</p>
+  <button type="submit">Amtliche Trefferantwort erzeugen</button>
+</form>
+<form method="post" action="/queries/{{ query.query_uid }}/structured-source-answer" class="card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+  <h2>Manuell: strukturierte Quellenantwort</h2>
+  <p>Erzeugt Kurzantwort, geltendes Recht und offene Punkte nur aus freigegebenen amtlichen Quellen. Jede Aussage bekommt eine Citation.</p>
+  <button type="submit">Strukturierte Quellenantwort erzeugen</button>
+</form>
+<form method="post" action="/queries/{{ query.query_uid }}/structured-tariff-answer" class="card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+  <h2>Manuell: strukturierte Antwort mit Tarifquellen</h2>
+  <p>Erzeugt eine Antwort aus freigegebenen amtlichen Quellen und freigegebenen BLAUEN Tarif-/EVG-/Tailshare-Quellen. GELBE Hinweisquellen werden nicht als fachliche Grundlage verwendet.</p>
+  <button type="submit">Antwort mit Tarifquellen erzeugen</button>
+</form>
+{% endblock %}

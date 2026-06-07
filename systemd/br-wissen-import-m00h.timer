@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily BR Wissensdatenbank m00h import check
+
+[Timer]
+OnCalendar=*-*-* 04:17:00
+Persistent=true
+RandomizedDelaySec=20m
+
+[Install]
+WantedBy=timers.target
