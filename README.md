@@ -1420,7 +1420,15 @@ Prueft, ob die zehn BR-Wissen-Service-/Timer-Dateien im Projekt mit
 `/etc/systemd/system/` synchron sind, ob die Unit-Dateien keine Symlinks oder
 irregulaeren Dateien sind, ob installierte Units nicht group-/world-writable sind,
 ob keine Projekt- oder installierte Unit world-writable ist
-(`unit_policy_failures=0`) und ob die fuenf erwarteten Timer aktiv sind.
+(`unit_policy_failures=0`), ob installierte Units `root:root` gehoeren, ob
+Projekt-Units denselben Owner/dieselbe Group wie `systemd/` haben und ob die
+Parent-Verzeichnisse `systemd/`, `/etc/systemd` und `/etc/systemd/system` keine
+unerwarteten Symlink-/Typ-/Owner-/Schreibrechte zeigen
+(`parent_policy_failures=0`) und ob die fuenf erwarteten Timer aktiv sind.
+Die `root:root`-Anforderung gilt dabei nur fuer die installierten `/etc/systemd*`-
+Parents; das Projekt-`systemd/` folgt dem Projektbaum-Owner. Vendor-Units unter
+`/usr/lib/systemd`, Runtime-Units unter `/run/systemd` und User-Units sind nicht
+Teil dieses BR-Wissen-Direct-Unit-Guards.
 Geprueft werden nur die direkten BR-Wissen-Unit-Dateien aus der festen
 `br-wissen-*`-Liste; normale systemd-Enablement-Symlinks unter `*.wants/` sind
 nicht Teil dieses Guards.

@@ -86,6 +86,7 @@ README_MARKERS: list[tuple[str, str]] = [
     ("restic_repository_check_command", "scripts/check-restic-repository-check.py --summary"),
     ("restic_repository_check_status", "restic_repository_check_status=ok"),
     ("systemd_unit_policy", "unit_policy_failures=0"),
+    ("systemd_parent_policy", "parent_policy_failures=0"),
     ("regression_source", "Regression-Source-Hardening-Guard pruefen"),
     ("no_secrets", "liest keine Secrets, Dumps, Logs, Antworttexte oder Quelleninhalte"),
 ]
@@ -147,6 +148,7 @@ RUNBOOK_MARKERS: list[tuple[str, str]] = [
     ("restic_repository_check_command", "scripts/check-restic-repository-check.py --summary"),
     ("restic_repository_check_status", "restic_repository_check_status=ok"),
     ("systemd_unit_policy", "unit_policy_failures=0"),
+    ("systemd_parent_policy", "parent_policy_failures=0"),
     ("restore_runtime_policy_heading", "## Restore-Runtime-Policy-Guard pruefen"),
     ("restore_runtime_policy_command", "scripts/check-restore-runtime-policy.py --summary"),
     ("restore_resolved_snapshot", "restore_resolved_snapshot=<id>"),
@@ -204,6 +206,7 @@ SYSTEMD_README_MARKERS: list[tuple[str, str]] = [
     ("meta_source_explanation", "Meta-Source-Hardening-Guard"),
     ("guard_coverage", "Guard-Coverage-Guard"),
     ("systemd_unit_policy", "unit_policy_failures=0"),
+    ("systemd_parent_policy", "parent_policy_failures=0"),
     ("readiness_doc", "Readiness-Doku-Guard"),
     ("daemon_reload", "daemon-reload"),
 ]
@@ -236,6 +239,7 @@ READINESS_MARKERS: list[tuple[str, str]] = [
     ("restic_repository_check_guard", "Restic-Repository-Check-Freshness"),
     ("restic_repository_check_status", "restic_repository_check_status=ok"),
     ("systemd_unit_policy", "unit_policy_failures=0"),
+    ("systemd_parent_policy", "parent_policy_failures=0"),
     ("backup_freshness_protocol_snapshot", "protocol_snapshot_current=1"),
     ("backup_freshness_helpers", "restic_binary=<pfad>"),
     ("privilege_policy", "Privilege-Policy-Guard"),

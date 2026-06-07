@@ -49,8 +49,81 @@ sync_failures=0
 timer_failures=0
 unit_missing=0
 unit_policy_failures=0
+parent_policy_failures=0
 failed_services=0
 checks=0
+project_unit_owner="unknown"
+project_unit_group="unknown"
+if [[ -d "${ROOT}/systemd" ]]; then
+  project_unit_owner="$(stat -c '%U' "${ROOT}/systemd")"
+  project_unit_group="$(stat -c '%G' "${ROOT}/systemd")"
+fi
+
+check_parent_directory_policy() {
+  local path="$1"
+  local label="$2"
+  local strict_mode="$3"
+  local mode owner group
+
+  # Scope note: project:systemd follows the project tree owner/group. The
+  # root:root requirement is intentionally limited to the direct installed
+  # /etc/systemd parents checked below. Vendor units below /usr/lib/systemd,
+  # runtime units below /run/systemd and user units are outside this BR-Wissen
+  # direct-unit guard because the project installs its managed units directly
+  # into /etc/systemd/system/<unit>.
+
+  checks=$((checks + 1))
+  if [[ -L "$path" ]]; then
+    parent_policy_failures=$((parent_policy_failures + 1))
+    if [[ "$summary" -eq 0 ]]; then
+      printf 'systemd_parent_policy=%s status=symlink\n' "$label"
+    fi
+    return
+  fi
+
+  checks=$((checks + 1))
+  if [[ ! -d "$path" ]]; then
+    parent_policy_failures=$((parent_policy_failures + 1))
+    if [[ "$summary" -eq 0 ]]; then
+      printf 'systemd_parent_policy=%s status=not_directory\n' "$label"
+    fi
+    return
+  fi
+
+  mode="$(stat -c '%a' "$path")"
+  owner="$(stat -c '%U' "$path")"
+  group="$(stat -c '%G' "$path")"
+
+  checks=$((checks + 1))
+  if [[ "$mode" =~ [0-7][0-7][2367]$ ]]; then
+    parent_policy_failures=$((parent_policy_failures + 1))
+    if [[ "$summary" -eq 0 ]]; then
+      printf 'systemd_parent_policy=%s status=world_writable mode=%s owner=%s group=%s\n' "$label" "$mode" "$owner" "$group"
+    fi
+    return
+  fi
+
+  checks=$((checks + 1))
+  if [[ "$strict_mode" == "installed" && ( "$owner" != "root" || "$group" != "root" ) ]]; then
+    parent_policy_failures=$((parent_policy_failures + 1))
+    if [[ "$summary" -eq 0 ]]; then
+      printf 'systemd_parent_policy=%s status=owner_unexpected mode=%s owner=%s group=%s\n' "$label" "$mode" "$owner" "$group"
+    fi
+    return
+  fi
+
+  if [[ "$strict_mode" == "installed" && ( "$mode" =~ [2367][0-7]$ || "$mode" =~ [0-7][2367]$ ) ]]; then
+    parent_policy_failures=$((parent_policy_failures + 1))
+    if [[ "$summary" -eq 0 ]]; then
+      printf 'systemd_parent_policy=%s status=writable mode=%s owner=%s group=%s\n' "$label" "$mode" "$owner" "$group"
+    fi
+    return
+  fi
+
+  if [[ "$summary" -eq 0 ]]; then
+    printf 'systemd_parent_policy=%s status=ok mode=%s owner=%s group=%s\n' "$label" "$mode" "$owner" "$group"
+  fi
+}
 
 check_unit_file_policy() {
   local path="$1"
@@ -101,6 +174,23 @@ check_unit_file_policy() {
     return
   fi
 
+  checks=$((checks + 1))
+  if [[ "$strict_mode" == "installed" && ( "$owner" != "root" || "$group" != "root" ) ]]; then
+    unit_policy_failures=$((unit_policy_failures + 1))
+    if [[ "$summary" -eq 0 ]]; then
+      printf 'systemd_unit_policy=%s status=owner_unexpected mode=%s owner=%s group=%s\n' "$label" "$mode" "$owner" "$group"
+    fi
+    return
+  fi
+
+  if [[ "$strict_mode" == "project" && ( "$owner" != "$project_unit_owner" || "$group" != "$project_unit_group" ) ]]; then
+    unit_policy_failures=$((unit_policy_failures + 1))
+    if [[ "$summary" -eq 0 ]]; then
+      printf 'systemd_unit_policy=%s status=project_owner_unexpected mode=%s owner=%s group=%s expected_owner=%s expected_group=%s\n' "$label" "$mode" "$owner" "$group" "$project_unit_owner" "$project_unit_group"
+    fi
+    return
+  fi
+
   if [[ "$summary" -eq 0 ]]; then
     printf 'systemd_unit_policy=%s status=ok mode=%s owner=%s group=%s\n' "$label" "$mode" "$owner" "$group"
   fi
@@ -109,6 +199,10 @@ check_unit_file_policy() {
 if [[ "$summary" -eq 0 ]]; then
   echo "# Systemd Unit Guard"
 fi
+
+check_parent_directory_policy "${ROOT}/systemd" "project:systemd" "project"
+check_parent_directory_policy "/etc/systemd" "installed:/etc/systemd" "installed"
+check_parent_directory_policy "/etc/systemd/system" "installed:/etc/systemd/system" "installed"
 
 for unit in "${units[@]}"; do
   src="${ROOT}/systemd/${unit}"
@@ -155,13 +249,13 @@ for service in "${services[@]}"; do
   fi
 done
 
-violations=$((sync_failures + timer_failures + unit_missing + unit_policy_failures + failed_services))
+violations=$((sync_failures + timer_failures + unit_missing + unit_policy_failures + parent_policy_failures + failed_services))
 if [[ "$violations" -eq 0 ]]; then
-  printf 'systemd_unit_guard_status=ok checks=%d units=%d timers=%d services=%d sync_failures=0 missing_units=0 unit_policy_failures=0 inactive_timers=0 failed_services=0\n' \
+  printf 'systemd_unit_guard_status=ok checks=%d units=%d timers=%d services=%d sync_failures=0 missing_units=0 unit_policy_failures=0 parent_policy_failures=0 inactive_timers=0 failed_services=0\n' \
     "$checks" "${#units[@]}" "${#timers[@]}" "${#services[@]}"
   exit 0
 fi
 
-printf 'systemd_unit_guard_status=fail checks=%d units=%d timers=%d services=%d sync_failures=%d missing_units=%d unit_policy_failures=%d inactive_timers=%d failed_services=%d\n' \
-  "$checks" "${#units[@]}" "${#timers[@]}" "${#services[@]}" "$sync_failures" "$unit_missing" "$unit_policy_failures" "$timer_failures" "$failed_services"
+printf 'systemd_unit_guard_status=fail checks=%d units=%d timers=%d services=%d sync_failures=%d missing_units=%d unit_policy_failures=%d parent_policy_failures=%d inactive_timers=%d failed_services=%d\n' \
+  "$checks" "${#units[@]}" "${#timers[@]}" "${#services[@]}" "$sync_failures" "$unit_missing" "$unit_policy_failures" "$parent_policy_failures" "$timer_failures" "$failed_services"
 exit 1

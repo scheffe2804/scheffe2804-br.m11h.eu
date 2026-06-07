@@ -162,8 +162,17 @@ erwarteten Timer auf `active`, die fuenf erwarteten Services auf nicht-`failed`
 und metadata-only die Unit-Datei-Policy. Erwartet sind keine Symlinks, regulaere
 Unit-Dateien, keine world-writable Projekt-/Installationsdateien und keine
 group-writable installierten Units; der Summary-Marker dafuer ist
-`unit_policy_failures=0`. Abgeschlossene oneshot-Services im Zustand `inactive`
-sind erwartbar und kein Fehler. Der Pfad-Scope ist bewusst auf die direkten
+`unit_policy_failures=0`. Installierte Units muessen `root:root` gehoeren;
+Projekt-Units muessen denselben Owner/dieselbe Group wie das Projekt-`systemd/`-
+Verzeichnis haben. Zusaetzlich prueft der Guard die Parent-Verzeichnisse
+`systemd/`, `/etc/systemd` und `/etc/systemd/system` auf Symlink-Freiheit,
+Verzeichnistyp, keine world-writable Rechte und fuer installierte Parents
+`root:root` ohne group-/world-writable Rechte; erwarteter Marker ist
+`parent_policy_failures=0`. Die `root:root`-Anforderung gilt nur fuer installierte
+`/etc/systemd*`-Parents; das Projekt-`systemd/` folgt dem Projektbaum-Owner.
+Vendor-Units unter `/usr/lib/systemd`, Runtime-Units unter `/run/systemd` und
+User-Units sind nicht Teil dieses BR-Wissen-Direct-Unit-Guards. Abgeschlossene
+oneshot-Services im Zustand `inactive` sind erwartbar und kein Fehler. Der Pfad-Scope ist bewusst auf die direkten
 BR-Wissen-Unit-Dateien aus der festen `br-wissen-*`-Liste begrenzt; normale
 systemd-Enablement-Symlinks unter `*.wants/` werden nicht inspiziert.
 

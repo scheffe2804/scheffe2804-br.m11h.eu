@@ -149,8 +149,9 @@ Aktive Schutzschichten:
 33. Projektartefakt-/Secret-Guard.
 34. Image-Pinning-Guard fuer externe Digest-Pins und lokale Build-Ausnahmen.
 35. Systemd-Unit-Guard fuer Unit-Sync, aktive Timer, fehlgeschlagene
-    BR-Wissen-Service-Units und metadata-only Unit-Datei-Policy
-    (`unit_policy_failures=0`).
+    BR-Wissen-Service-Units, metadata-only Unit-Datei-Policy
+    (`unit_policy_failures=0`) und Parent-Directory-Policy
+    (`parent_policy_failures=0`).
 36. Systemd-Source-Hardening-Guard fuer erwartete Service-/Timer-Quellenmarker,
     User, WorkingDirectory, ExecStart-/Preflight- und Timer-Policy.
 37. Status-Source-Hardening-Guard fuer die read-only Quellenpruefung des
@@ -298,7 +299,7 @@ Aktueller Guard-Stand laut read-only Status-/Summary-Pruefungen vom 2026-06-06:
 - App-Auth-Surface: `app_auth_surface_status=ok checks=21 findings=0 protected_gets=9 redirected=9 public_gets=2 public_ok=2 csrf_posts=6 csrf_blocked=6 post_successes=0 post_redirects=0`.
 - Runtime-Log-Marker: `runtime_log_marker_status=ok checks=5 markers=5 findings=0`.
 - Image-Pinning-Guard: `image_pinning_guard_status=ok refs=6 local_build=2 digest_pinned=4 violations=0`.
-- Systemd-Unit-Guard: `systemd_unit_guard_status=ok checks=80 units=10 timers=5 services=5 sync_failures=0 missing_units=0 unit_policy_failures=0 inactive_timers=0 failed_services=0`.
+- Systemd-Unit-Guard: `systemd_unit_guard_status=ok checks=112 units=10 timers=5 services=5 sync_failures=0 missing_units=0 unit_policy_failures=0 parent_policy_failures=0 inactive_timers=0 failed_services=0`.
 - Systemd-Source-Hardening: `systemd_source_hardening_status=ok`.
 - Status-Source-Hardening: `status_source_hardening_status=ok`.
 - Healthcheck-Source-Hardening: `healthcheck_source_hardening_status=ok`.
@@ -717,6 +718,16 @@ Systemd-Unit-Guard:
 - Prueft metadata-only, dass Unit-Quellen keine Symlinks oder irregulaeren Dateien
   sind, dass installierte Units nicht group-/world-writable sind und dass keine
   Projekt- oder installierte Unit world-writable ist (`unit_policy_failures=0`).
+- Prueft metadata-only die Parent-Verzeichnisse `systemd/`, `/etc/systemd` und
+  `/etc/systemd/system` auf Symlink-Freiheit, Verzeichnistyp, keine world-
+  writable Rechte und fuer installierte Parents `root:root` ohne group-/world-
+  writable Rechte (`parent_policy_failures=0`).
+- Begrenzt die `root:root`-Parent-Anforderung auf installierte `/etc/systemd*`-
+  Parents; das Projekt-`systemd/` folgt dem Projektbaum-Owner. Vendor-Units unter
+  `/usr/lib/systemd`, Runtime-Units unter `/run/systemd` und User-Units sind nicht
+  Teil dieses BR-Wissen-Direct-Unit-Guards.
+- Prueft installierte Units auf `root:root` und Projekt-Units auf denselben Owner
+  und dieselbe Group wie das Projekt-`systemd/`-Verzeichnis.
 - Begrenzt den Symlink-/Dateipolicy-Scope auf die direkten BR-Wissen-Unit-Dateien
   aus der festen `br-wissen-*`-Liste; normale systemd-Enablement-Symlinks unter
   `*.wants/` werden nicht inspiziert.
@@ -1165,7 +1176,7 @@ Verschluesseltes Restic-Backup laut Backup-Freshness-Guard beim Doku-Abgleich vo
 - Letzter App-Auth-Surface-Preflight: `app_auth_surface_status=ok checks=21 findings=0 protected_gets=9 redirected=9 public_gets=2 public_ok=2 csrf_posts=6 csrf_blocked=6 post_successes=0 post_redirects=0`.
 - Letzter Backup-Preflight: `artifact_status=ok checks=8 findings=0`.
 - Letzter Image-Pinning-Preflight: `image_pinning_guard_status=ok refs=6 local_build=2 digest_pinned=4 violations=0`.
-- Letzter Systemd-Unit-Preflight: `systemd_unit_guard_status=ok checks=80 units=10 timers=5 services=5 sync_failures=0 missing_units=0 unit_policy_failures=0 inactive_timers=0 failed_services=0`.
+- Letzter Systemd-Unit-Preflight: `systemd_unit_guard_status=ok checks=112 units=10 timers=5 services=5 sync_failures=0 missing_units=0 unit_policy_failures=0 parent_policy_failures=0 inactive_timers=0 failed_services=0`.
 - Letzter Systemd-Source-Hardening-Preflight: `systemd_source_hardening_status=ok`.
 - Letzter Backup-Source-Hardening-Preflight: `backup_source_hardening_status=ok`.
 - Letzter Restore-Source-Hardening-Preflight: `restore_source_hardening_status=ok`.

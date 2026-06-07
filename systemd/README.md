@@ -220,7 +220,9 @@ wenn der Systemd-Source-Hardening-Guard unerwartete Service-/Timer-Quellenmarker
 oder fehlende Healthcheck-Preflights erkennt oder wenn der Systemd-Unit-Guard
 fehlende, nicht synchronisierte, als Symlink eingebundene, irregulaere,
 installiert group-/world-writable oder projekt-/installiert world-writable
-Unit-Dateien meldet (`unit_policy_failures=0`) oder wenn der Status-Source-
+Unit-Dateien meldet (`unit_policy_failures=0`), unerwartete Unit-Owner meldet
+oder die Parent-Verzeichnis-Policy fuer `systemd/`, `/etc/systemd` oder
+`/etc/systemd/system` verletzt sieht (`parent_policy_failures=0`) oder wenn der Status-Source-
 Hardening-Guard unerwartete Aenderungen am zentralen Status-Wrapper, seinen
 read-only Defaults, Opt-in-Pfaden oder Guard-Abschnitten erkennt oder wenn der
 Healthcheck-Source-Hardening-Guard unerwartete Aenderungen an App-Healthcheck-
@@ -346,10 +348,18 @@ den Preflight
 Der Systemd-Unit-Guard prueft zusaetzlich metadata-only die Unit-Datei-Policy von
 Projekt- und installierten BR-Wissen-Units: keine Symlinks, regulaere Dateien,
 keine world-writable Projekt-/Installationsdateien und keine group-writable
-installierten Units; erwarteter Marker ist `unit_policy_failures=0`. Der Scope
-ist auf direkte BR-Wissen-Unit-Dateien aus der festen `br-wissen-*`-Liste
-begrenzt; normale systemd-Enablement-Symlinks unter `*.wants/` sind nicht Teil der
-Pruefung.
+installierten Units; installierte Units muessen `root:root` gehoeren und Projekt-
+Units denselben Owner/dieselbe Group wie das Projekt-`systemd/`-Verzeichnis
+haben. Erwarteter Marker ist `unit_policy_failures=0`. Der Guard prueft zudem die
+Parent-Verzeichnisse `systemd/`, `/etc/systemd` und `/etc/systemd/system` auf
+Symlink-Freiheit, Verzeichnistyp, keine world-writable Rechte und fuer installierte
+Parents `root:root` ohne group-/world-writable Rechte; erwarteter Marker ist
+`parent_policy_failures=0`. Die `root:root`-Anforderung gilt nur fuer installierte
+`/etc/systemd*`-Parents; das Projekt-`systemd/` folgt dem Projektbaum-Owner.
+Vendor-Units unter `/usr/lib/systemd`, Runtime-Units unter `/run/systemd` und
+User-Units sind nicht Teil dieses BR-Wissen-Direct-Unit-Guards. Der Scope ist auf
+direkte BR-Wissen-Unit-Dateien aus der festen `br-wissen-*`-Liste begrenzt;
+normale systemd-Enablement-Symlinks unter `*.wants/` sind nicht Teil der Pruefung.
 Der Freshness-Source-Hardening-Guard prueft die Backup-/Restore-Freshness-
 Quellen auf erwartete metadata-only Log-/Dump-/Restic-/Restore-Smoke-/Summary-
 Marker, ohne Freshness-Checks, `sudo`, Restic, Docker oder DB-Abfragen
