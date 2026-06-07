@@ -23,6 +23,7 @@ READINESS_DOC = ROOT / "scripts" / "check-readiness-doc.py"
 PYTHON_SYNTAX = ROOT / "scripts" / "check-python-syntax.sh"
 SHELL_SYNTAX = ROOT / "scripts" / "check-shell-syntax.sh"
 SYSTEMD_UNITS = ROOT / "scripts" / "check-systemd-units.sh"
+SYSTEMD_LOADED_UNITS = ROOT / "scripts" / "check-systemd-loaded-units.py"
 SCRIPT_PERMISSION_POLICY = ROOT / "scripts" / "check-script-permission-policy.py"
 DOC_SOURCE_HARDENING = ROOT / "scripts" / "check-doc-source-hardening.py"
 SOURCE_HARDENING_COVERAGE = ROOT / "scripts" / "check-source-hardening-coverage.py"
@@ -196,6 +197,34 @@ SYSTEMD_UNIT_MARKERS: list[tuple[str, str]] = [
 ]
 
 
+SYSTEMD_LOADED_UNIT_MARKERS: list[tuple[str, str]] = [
+    ("docstring_read_only", "Read-only loaded systemd unit metadata guard for BR-Wissen"),
+    ("docstring_systemctl_show", "It uses only `systemctl show` metadata and project unit\nsource text"),
+    ("systemctl_path", "SYSTEMCTL = Path(\"/usr/bin/systemctl\")"),
+    ("fragment_prefix", "FRAGMENT_PREFIX = \"/etc/systemd/system/\""),
+    ("services", "SERVICES = ["),
+    ("timers", "TIMERS = ["),
+    ("expected_users", "EXPECTED_SERVICE_USERS = {"),
+    ("systemctl_show", "def run_systemctl_show(unit: str)"),
+    ("property_contract", "Id,LoadState,FragmentPath,UnitFileState,ActiveState,SubState,Result,Type,User,WorkingDirectory,ExecStart,ExecStartPre,Unit,WantedBy,Triggers"),
+    ("project_values", "def project_values(unit: str)"),
+    ("command_path", "def command_path(command_blob: str) -> str:"),
+    ("common_check", "def check_common(findings: list[str], unit: str, values: dict[str, list[str]], expected_state: str)"),
+    ("service_check", "def check_service(findings: list[str], unit: str, values: dict[str, list[str]])"),
+    ("timer_check", "def check_timer(findings: list[str], unit: str, values: dict[str, list[str]])"),
+    ("loaded_state", "LoadState"),
+    ("fragment_path", "FragmentPath"),
+    ("static_services", "static_services"),
+    ("enabled_timers", "enabled_timers"),
+    ("active_timers", "active_timers"),
+    ("failed_services", "failed_services"),
+    ("summary", "systemd_loaded_unit_status=%s checks=%d findings=%d units=%d loaded_units=%d"),
+]
+
+# Meta-governance inventory marker for source-hardening coverage:
+# check-systemd-loaded-units.py
+
+
 SCRIPT_PERMISSION_POLICY_MARKERS: list[tuple[str, str]] = [
     ("docstring_read_only", "Read-only script/unit/documentation permission policy guard for BR-Wissen"),
     ("docstring_metadata", "The guard checks only filesystem metadata: file type, mode, ownership"),
@@ -257,6 +286,7 @@ SOURCE_HARDENING_COVERAGE_MARKERS: list[tuple[str, str]] = [
     ("meta_group", "meta_source_hardening"),
     ("source_guards", "SOURCE_HARDENING_GUARDS = sorted"),
     ("operational_wrapper_source_guard", "check-operational-wrapper-source-hardening.py"),
+    ("systemd_loaded_unit_guard", "check-systemd-loaded-units.py"),
     ("script_permission_policy_guard", "check-script-permission-policy.py"),
     ("exceptions", "EXPLICIT_EXCEPTIONS = {"),
     ("cloudflare_exception", "check-cloudflare-staging-pattern.sh"),
@@ -487,6 +517,7 @@ def main() -> int:
     python_text = read_source(PYTHON_SYNTAX, findings, "python_syntax")
     shell_text = read_source(SHELL_SYNTAX, findings, "shell_syntax")
     systemd_text = read_source(SYSTEMD_UNITS, findings, "systemd_units")
+    systemd_loaded_text = read_source(SYSTEMD_LOADED_UNITS, findings, "systemd_loaded_units")
     script_permission_policy_text = read_source(SCRIPT_PERMISSION_POLICY, findings, "script_permission_policy")
     doc_source_text = read_source(DOC_SOURCE_HARDENING, findings, "doc_source_hardening")
     source_coverage_text = read_source(SOURCE_HARDENING_COVERAGE, findings, "source_hardening_coverage")
@@ -496,13 +527,14 @@ def main() -> int:
     protocol_integrity_text = read_source(PROTOCOL_INTEGRITY, findings, "protocol_integrity")
     git_remote_readiness_text = read_source(GIT_REMOTE_READINESS, findings, "git_remote_readiness")
     backup_scope_text = read_source(BACKUP_SCOPE, findings, "backup_scope")
-    checks += 14
+    checks += 15
 
     checks += check_markers(findings, coverage_text, GUARD_COVERAGE_MARKERS, "coverage")
     checks += check_markers(findings, readiness_text, READINESS_DOC_MARKERS, "readiness")
     checks += check_markers(findings, python_text, PYTHON_SYNTAX_MARKERS, "python_syntax")
     checks += check_markers(findings, shell_text, SHELL_SYNTAX_MARKERS, "shell_syntax")
     checks += check_markers(findings, systemd_text, SYSTEMD_UNIT_MARKERS, "systemd_unit")
+    checks += check_markers(findings, systemd_loaded_text, SYSTEMD_LOADED_UNIT_MARKERS, "systemd_loaded_unit")
     checks += check_markers(findings, script_permission_policy_text, SCRIPT_PERMISSION_POLICY_MARKERS, "script_permission_policy")
     checks += check_markers(findings, doc_source_text, DOC_SOURCE_MARKERS, "doc_source")
     checks += check_markers(findings, source_coverage_text, SOURCE_HARDENING_COVERAGE_MARKERS, "source_coverage")
@@ -519,6 +551,7 @@ def main() -> int:
         ("python_syntax", python_text),
         ("shell_syntax", shell_text),
         ("systemd_unit", systemd_text),
+        ("systemd_loaded_unit", systemd_loaded_text),
         ("script_permission_policy", script_permission_policy_text),
         ("doc_source", doc_source_text),
         ("source_coverage", source_coverage_text),
@@ -546,6 +579,9 @@ def main() -> int:
     checks += 1
     if systemd_text.find("units=(") > systemd_text.find("for unit in \"${units[@]}\""):
         findings.append("systemd_units_after_loop")
+    checks += 1
+    if systemd_loaded_text.find("SERVICES = [") > systemd_loaded_text.find("for unit in UNITS"):
+        findings.append("systemd_loaded_units_after_loop")
     checks += 1
     if script_permission_policy_text.find("EXPECTED_PROJECT_DIRS") > script_permission_policy_text.find("for directory in EXPECTED_PROJECT_DIRS"):
         findings.append("script_permission_policy_dirs_after_loop")
@@ -575,7 +611,7 @@ def main() -> int:
         findings.append("backup_scope_expected_paths_after_use")
 
     status = "ok" if not findings else "failed"
-    summary = "meta_source_hardening_status=%s checks=%d findings=%d coverage_markers=%d readiness_markers=%d python_syntax_markers=%d shell_syntax_markers=%d systemd_unit_markers=%d script_permission_policy_markers=%d doc_source_markers=%d source_coverage_markers=%d summary_contract_markers=%d surface_registry_markers=%d guard_registry_integrity_markers=%d protocol_integrity_markers=%d git_remote_readiness_markers=%d backup_scope_markers=%d forbidden_markers=%d" % (
+    summary = "meta_source_hardening_status=%s checks=%d findings=%d coverage_markers=%d readiness_markers=%d python_syntax_markers=%d shell_syntax_markers=%d systemd_unit_markers=%d systemd_loaded_unit_markers=%d script_permission_policy_markers=%d doc_source_markers=%d source_coverage_markers=%d summary_contract_markers=%d surface_registry_markers=%d guard_registry_integrity_markers=%d protocol_integrity_markers=%d git_remote_readiness_markers=%d backup_scope_markers=%d forbidden_markers=%d" % (
         status,
         checks,
         len(findings),
@@ -584,6 +620,7 @@ def main() -> int:
         len(PYTHON_SYNTAX_MARKERS),
         len(SHELL_SYNTAX_MARKERS),
         len(SYSTEMD_UNIT_MARKERS),
+        len(SYSTEMD_LOADED_UNIT_MARKERS),
         len(SCRIPT_PERMISSION_POLICY_MARKERS),
         len(DOC_SOURCE_MARKERS),
         len(SOURCE_HARDENING_COVERAGE_MARKERS),
@@ -593,7 +630,7 @@ def main() -> int:
         len(PROTOCOL_INTEGRITY_MARKERS),
         len(GIT_REMOTE_READINESS_MARKERS),
         len(BACKUP_SCOPE_MARKERS),
-        len(FORBIDDEN_COMMON_MARKERS) * 14,
+        len(FORBIDDEN_COMMON_MARKERS) * 15,
     )
     if args.summary:
         print(summary)

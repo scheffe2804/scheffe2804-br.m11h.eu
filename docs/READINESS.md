@@ -153,6 +153,10 @@ Aktive Schutzschichten:
     (`unit_policy_failures=0`) und Parent-Directory-Policy
     (`parent_policy_failures=0`) sowie Linux-Dateiattribut-Policy
     (`attr_policy_failures=0`).
+35a. Systemd-Loaded-Unit-Guard fuer read-only `systemctl show`-Metadaten der
+     tatsaechlich von systemd geladenen BR-Wissen-Services und Timer inklusive
+     FragmentPath, UnitFileState, Timer-Aktivitaet, Service-Result, User,
+     WorkingDirectory, ExecStart und Healthcheck-ExecStartPre-Sequenz.
 36. Systemd-Source-Hardening-Guard fuer erwartete Service-/Timer-Quellenmarker,
     User, WorkingDirectory, ExecStart-/Preflight- und Timer-Policy.
 37. Status-Source-Hardening-Guard fuer die read-only Quellenpruefung des
@@ -315,6 +319,7 @@ Aktueller Guard-Stand laut read-only Status-/Summary-Pruefungen vom 2026-06-06:
 - Runtime-Log-Marker: `runtime_log_marker_status=ok checks=5 markers=5 findings=0`.
 - Image-Pinning-Guard: `image_pinning_guard_status=ok refs=6 local_build=2 digest_pinned=4 violations=0`.
 - Systemd-Unit-Guard: `systemd_unit_guard_status=ok checks=181 units=10 timers=5 services=5 sync_failures=0 missing_units=0 unit_policy_failures=0 parent_policy_failures=0 attr_policy_failures=0 lsattr_available=1 acl_tool_available=0 xattr_tool_available=0 inactive_timers=0 failed_services=0`.
+- Systemd-Loaded-Unit-Guard: `systemd_loaded_unit_status=ok checks=98 findings=0 units=10 loaded_units=10 fragment_matches=10 static_services=5 enabled_timers=5 active_timers=5 failed_services=0`.
 - Systemd-Source-Hardening: `systemd_source_hardening_status=ok`.
 - Status-Source-Hardening: `status_source_hardening_status=ok`.
 - Healthcheck-Source-Hardening: `healthcheck_source_hardening_status=ok`.
@@ -1236,6 +1241,7 @@ Verschluesseltes Restic-Backup laut Backup-Freshness-Guard beim Doku-Abgleich vo
 - Letzter Backup-Preflight: `artifact_status=ok checks=8 findings=0`.
 - Letzter Image-Pinning-Preflight: `image_pinning_guard_status=ok refs=6 local_build=2 digest_pinned=4 violations=0`.
 - Letzter Systemd-Unit-Preflight: `systemd_unit_guard_status=ok checks=181 units=10 timers=5 services=5 sync_failures=0 missing_units=0 unit_policy_failures=0 parent_policy_failures=0 attr_policy_failures=0 lsattr_available=1 acl_tool_available=0 xattr_tool_available=0 inactive_timers=0 failed_services=0`.
+- Letzter Systemd-Loaded-Unit-Preflight: `systemd_loaded_unit_status=ok checks=98 findings=0 units=10 loaded_units=10 fragment_matches=10 static_services=5 enabled_timers=5 active_timers=5 failed_services=0`.
 - Letzter Systemd-Source-Hardening-Preflight: `systemd_source_hardening_status=ok`.
 - Letzter Backup-Source-Hardening-Preflight: `backup_source_hardening_status=ok`.
 - Letzter Restore-Source-Hardening-Preflight: `restore_source_hardening_status=ok`.

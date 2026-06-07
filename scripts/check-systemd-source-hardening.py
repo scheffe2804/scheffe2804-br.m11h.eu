@@ -58,6 +58,7 @@ SERVICE_EXPECTATIONS: dict[str, dict[str, str | list[str]]] = {
             "/home/chris/web/br.m11h.eu/scripts/check-project-artifacts.sh --summary",
             "/home/chris/web/br.m11h.eu/scripts/check-image-pinning-guard.sh --summary",
             "/home/chris/web/br.m11h.eu/scripts/check-systemd-units.sh --summary",
+            "/home/chris/web/br.m11h.eu/scripts/check-systemd-loaded-units.py --summary",
             "/home/chris/web/br.m11h.eu/scripts/check-systemd-source-hardening.py --summary",
             "/home/chris/web/br.m11h.eu/scripts/check-status-source-hardening.py --summary",
             "/home/chris/web/br.m11h.eu/scripts/check-healthcheck-source-hardening.py --summary",

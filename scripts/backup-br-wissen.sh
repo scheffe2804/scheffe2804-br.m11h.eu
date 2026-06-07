@@ -118,6 +118,7 @@ umask 027
   run_preflight artifact "${APP_DIR}/scripts/check-project-artifacts.sh" --summary
   run_preflight image_pinning "${APP_DIR}/scripts/check-image-pinning-guard.sh" --summary
   run_preflight systemd_unit "${APP_DIR}/scripts/check-systemd-units.sh" --summary
+  run_preflight systemd_loaded_unit "${APP_DIR}/scripts/check-systemd-loaded-units.py" --summary
   run_preflight systemd_source_hardening "${APP_DIR}/scripts/check-systemd-source-hardening.py" --summary
   run_preflight status_source_hardening "${APP_DIR}/scripts/check-status-source-hardening.py" --summary
   run_preflight healthcheck_source_hardening "${APP_DIR}/scripts/check-healthcheck-source-hardening.py" --summary

@@ -51,6 +51,7 @@ ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-network-policy-runtime-sum
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-project-artifacts.sh --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-image-pinning-guard.sh --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-systemd-units.sh --summary
+ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-systemd-loaded-units.py --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-systemd-source-hardening.py --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-status-source-hardening.py --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-healthcheck-source-hardening.py --summary
@@ -238,7 +239,10 @@ installiert group-/world-writable oder projekt-/installiert world-writable
 Unit-Dateien meldet (`unit_policy_failures=0`), unerwartete Unit-Owner meldet
 oder die Parent-Verzeichnis-Policy fuer `systemd/`, `/etc/systemd` oder
 `/etc/systemd/system` verletzt sieht (`parent_policy_failures=0`), unerwartete
-Linux-Dateiattribute meldet (`attr_policy_failures=0`) oder wenn der Status-Source-
+Linux-Dateiattribute meldet (`attr_policy_failures=0`) oder wenn der Systemd-
+Loaded-Unit-Guard meldet, dass systemd andere Fragmente, UnitFileStates,
+Service-User, `ExecStart`-/`ExecStartPre`-Pfade oder Timer-/Service-Zustaende
+geladen hat als die Projekt-/Installationspolicy erwartet (`systemd_loaded_unit_status=ok`), oder wenn der Status-Source-
 Hardening-Guard unerwartete Aenderungen am zentralen Status-Wrapper, seinen
 read-only Defaults, Opt-in-Pfaden oder Guard-Abschnitten erkennt oder wenn der
 Healthcheck-Source-Hardening-Guard unerwartete Aenderungen an App-Healthcheck-

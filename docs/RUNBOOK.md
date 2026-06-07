@@ -188,6 +188,29 @@ Der Guard laeuft auch:
 - als `ExecStartPre` im systemd-Healthcheck,
 - als Preflight im Backup-Skript vor Dump/Restic.
 
+## Systemd-Loaded-Unit-Guard pruefen
+
+```bash
+cd /home/chris/web/br.m11h.eu
+scripts/check-systemd-loaded-units.py
+scripts/check-systemd-loaded-units.py --summary
+```
+
+Der Guard ist read-only und prueft per `systemctl show` nur die geladenen
+systemd-Metadaten der fuenf BR-Wissen-Services und fuenf Timer. Erwartet werden
+geladene Units aus `/etc/systemd/system/`, statische Services, aktivierte/aktive
+Timer, erfolgreiche/nicht fehlgeschlagene Services, erwartete Service-User,
+`Type=oneshot`, `WorkingDirectory=/home/chris/web/br.m11h.eu`, erwartete
+`ExecStart`-Pfade und die geladene Healthcheck-`ExecStartPre`-Sequenz. Er startet,
+stoppt, restartet, enabled, disabled oder reloadet keine Units und liest keine
+Secrets, Dumps, Logs, Antworttexte, Exporte oder Quelleninhalte.
+
+Der Guard laeuft auch:
+
+- im normalen Statuscheck unter `Systemd-Loaded-Unit-Guard`,
+- als `ExecStartPre` im systemd-Healthcheck,
+- als Preflight im Backup-Skript vor Dump/Restic.
+
 ## Status-Source-Hardening-Guard pruefen
 
 ```bash

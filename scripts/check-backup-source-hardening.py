@@ -99,6 +99,7 @@ EXPECTED_PREFLIGHTS = [
     ("artifact", "check-project-artifacts.sh", "--summary"),
     ("image_pinning", "check-image-pinning-guard.sh", "--summary"),
     ("systemd_unit", "check-systemd-units.sh", "--summary"),
+    ("systemd_loaded_unit", "check-systemd-loaded-units.py", "--summary"),
     ("systemd_source_hardening", "check-systemd-source-hardening.py", "--summary"),
     ("status_source_hardening", "check-status-source-hardening.py", "--summary"),
     ("healthcheck_source_hardening", "check-healthcheck-source-hardening.py", "--summary"),

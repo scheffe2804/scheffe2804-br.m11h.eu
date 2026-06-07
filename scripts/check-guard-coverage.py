@@ -70,6 +70,7 @@ GUARDS: list[GuardSpec] = [
     GuardSpec("Projektartefakte", "check-project-artifacts.sh", "artifact_status", "Projektartefakte", "artifact"),
     GuardSpec("Image-Pinning-Guard", "check-image-pinning-guard.sh", "image_pinning_guard_status", "Image-Pinning-Guard", "image_pinning"),
     GuardSpec("Systemd-Unit-Guard", "check-systemd-units.sh", "systemd_unit_guard_status", "Systemd Timer", "systemd_unit"),
+    GuardSpec("Systemd-Loaded-Unit-Guard", "check-systemd-loaded-units.py", "systemd_loaded_unit_status", "Systemd-Loaded-Unit-Guard", "systemd_loaded_unit"),
     GuardSpec("Systemd-Source-Hardening", "check-systemd-source-hardening.py", "systemd_source_hardening_status", "Systemd-Source-Hardening", "systemd_source_hardening"),
     GuardSpec("Status-Source-Hardening", "check-status-source-hardening.py", "status_source_hardening_status", "Status-Source-Hardening", "status_source_hardening"),
     GuardSpec("Healthcheck-Source-Hardening", "check-healthcheck-source-hardening.py", "healthcheck_source_hardening_status", "Healthcheck-Source-Hardening", "healthcheck_source_hardening"),

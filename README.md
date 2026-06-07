@@ -1495,6 +1495,24 @@ systemd-Zustand `failed` haengt. Abgeschlossene oneshot-Services im Zustand
 `inactive` sind dabei erwartbar und gelten nicht als Fehler. Der Guard laeuft im
 normalen Statuscheck, im systemd-Healthcheck-Preflight und im Backup-Preflight.
 
+### Systemd-Loaded-Unit-Guard pruefen
+
+```bash
+scripts/check-systemd-loaded-units.py
+scripts/check-systemd-loaded-units.py --summary
+```
+
+Der Guard ist read-only und prueft per `systemctl show` ausschliesslich geladene
+systemd-Metadaten der fuenf BR-Wissen-Services und fuenf Timer: `LoadState`,
+`FragmentPath`, `UnitFileState`, `ActiveState`, `Result`, Service-`Type`, `User`,
+`WorkingDirectory`, `ExecStart` und die Healthcheck-`ExecStartPre`-Sequenz. Er
+startet, stoppt, restartet, enabled, disabled oder reloadet keine Units und liest
+keine Secrets, Dumps, Logs, Antworttexte, Exporte oder Quelleninhalte. Erwarteter
+Summary-Marker ist `systemd_loaded_unit_status=ok`. Der Guard laeuft im normalen
+Statuscheck, im systemd-Healthcheck-Preflight und im Backup-Preflight vor
+Dump/Restic und ergaenzt den Datei-Sync-/Rechte-Guard `check-systemd-units.sh` um
+die Sicht auf die von systemd tatsaechlich geladene Unit-Konfiguration.
+
 ### Container-Image-Inventar pruefen
 
 ```bash

@@ -104,6 +104,7 @@ EXPECTED_SECTIONS = [
     "Network-Policy-Runtime-Env-Guard",
     "Network-Policy-Runtime-Summary-Guard",
     "Systemd Timer",
+    "Systemd-Loaded-Unit-Guard",
     "Systemd-Source-Hardening",
     "Status-Source-Hardening",
     "Healthcheck-Source-Hardening",
@@ -232,6 +233,7 @@ EXPECTED_SUMMARY_CALLS = [
     "scripts/check-image-pinning-guard.sh --summary",
     "scripts/check-image-pinning-readiness.sh --summary --no-remote",
     "scripts/check-image-pinning-readiness.sh --summary",
+    "scripts/check-systemd-loaded-units.py --summary",
 ]
 
 

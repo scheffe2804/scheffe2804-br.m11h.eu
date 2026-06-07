@@ -36,6 +36,7 @@ ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-network-policy-runtime-sum
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-project-artifacts.sh --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-image-pinning-guard.sh --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-systemd-units.sh --summary
+ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-systemd-loaded-units.py --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-systemd-source-hardening.py --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-status-source-hardening.py --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-healthcheck-source-hardening.py --summary

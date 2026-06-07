@@ -166,6 +166,10 @@ echo "## Systemd Timer"
 scripts/check-systemd-units.sh --summary
 echo
 
+echo "## Systemd-Loaded-Unit-Guard"
+scripts/check-systemd-loaded-units.py --summary
+echo
+
 echo "## Systemd-Source-Hardening"
 scripts/check-systemd-source-hardening.py --summary
 echo
