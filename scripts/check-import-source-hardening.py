@@ -21,6 +21,7 @@ SYSTEMD_DIR = ROOT / "systemd"
 M00H_SCRIPT = ROOT / "scripts" / "import-m00h-betriebsrat.sh"
 BAG_WRAPPER = ROOT / "scripts" / "import-bag-feed-docker.sh"
 BAG_IMPORTER = ROOT / "scripts" / "import-bag-feed.py"
+IMPORT_PIPELINE = ROOT / "scripts" / "check-import-pipeline.py"
 
 
 M00H_LITERALS = [
@@ -86,6 +87,30 @@ BAG_IMPORTER_LITERALS = [
     "failed=%d",
     "log.chmod(0o640)",
     "if failures and not results:",
+]
+
+
+IMPORT_PIPELINE_LITERALS = [
+    "Read-only guard for BR-Wissen import pipeline health",
+    "DEFAULT_MAX_AGE_HOURS = float(os.getenv(\"BR_IMPORT_LOG_MAX_AGE_HOURS\", \"72\"))",
+    "SUDO = Path(\"/usr/bin/sudo\")",
+    "PYTHON = Path(\"/usr/bin/python3.13\")",
+    "SYSTEMCTL = Path(\"/usr/bin/systemctl\")",
+    "DOCKER = Path(\"/usr/bin/docker\")",
+    "def helper_available(path: Path) -> bool:",
+    "def latest_log(pattern: str) -> Path | None:",
+    "def read_log(path: Path) -> tuple[str, str]:",
+    "str(SUDO)",
+    "str(PYTHON)",
+    "def timer_active(unit: str) -> bool:",
+    "str(SYSTEMCTL)",
+    "def db_metrics() -> dict[str, int]:",
+    "str(DOCKER)",
+    "sources_without_document=",
+    "approved_sources_without_chunks=",
+    "chunk_class_mismatches=",
+    "recent_checked_72h=",
+    "import_pipeline_status=%s checks=%d findings=%d m00h_latest_age_h=%s bag_latest_age_h=%s recent_checked_72h=%s",
 ]
 
 
@@ -156,11 +181,13 @@ def main() -> int:
     m00h_text = read_source(M00H_SCRIPT, findings)
     bag_wrapper_text = read_source(BAG_WRAPPER, findings)
     bag_importer_text = read_source(BAG_IMPORTER, findings)
-    checks += 3
+    import_pipeline_text = read_source(IMPORT_PIPELINE, findings)
+    checks += 4
 
     checks += require_literals(m00h_text, M00H_LITERALS, "m00h", findings)
     checks += require_literals(bag_wrapper_text, BAG_WRAPPER_LITERALS, "bag_wrapper", findings)
     checks += require_literals(bag_importer_text, BAG_IMPORTER_LITERALS, "bag_importer", findings)
+    checks += require_literals(import_pipeline_text, IMPORT_PIPELINE_LITERALS, "import_pipeline", findings)
 
     checks += 1
     if m00h_text.find("rsync -azn") > m00h_text.find("rsync -az --delete"):
@@ -181,13 +208,14 @@ def main() -> int:
         checks += require_literals(unit_text, literals, unit.replace(".", "_"), findings)
 
     status = "ok" if not findings else "failed"
-    summary = "import_source_hardening_status=%s checks=%d findings=%d scripts=3 units=4 m00h_literals=%d bag_wrapper_literals=%d bag_importer_literals=%d" % (
+    summary = "import_source_hardening_status=%s checks=%d findings=%d scripts=4 units=4 m00h_literals=%d bag_wrapper_literals=%d bag_importer_literals=%d import_pipeline_literals=%d" % (
         status,
         checks,
         len(findings),
         len(M00H_LITERALS),
         len(BAG_WRAPPER_LITERALS),
         len(BAG_IMPORTER_LITERALS),
+        len(IMPORT_PIPELINE_LITERALS),
     )
     if args.summary:
         print(summary)

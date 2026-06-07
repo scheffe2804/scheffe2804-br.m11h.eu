@@ -18,14 +18,21 @@ from typing import Any
 ROOT = Path(__file__).resolve().parent.parent
 EXPECTED_SERVICES = ["app", "db", "worker", "proxy", "cloudflared"]
 HEALTH_REQUIRED = {"app", "db"}
+DOCKER = Path("/usr/bin/docker")
 
 
 def run(args: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(args, cwd=str(ROOT), text=True, capture_output=True, check=False)
 
 
+def helper_available(path: Path) -> bool:
+    return path.exists() and not path.is_symlink() and path.is_file()
+
+
 def compose_ps() -> tuple[int, list[dict[str, Any]]]:
-    proc = run(["docker", "compose", "ps", "--format", "json"])
+    if not helper_available(DOCKER):
+        return 127, []
+    proc = run([str(DOCKER), "compose", "ps", "--format", "json"])
     if proc.returncode != 0:
         return proc.returncode, []
     rows: list[dict[str, Any]] = []

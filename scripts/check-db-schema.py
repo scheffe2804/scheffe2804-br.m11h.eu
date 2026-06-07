@@ -9,6 +9,7 @@ from pathlib import Path
 
 
 ROOT = Path("/home/chris/web/br.m11h.eu")
+DOCKER = Path("/usr/bin/docker")
 
 EXPECTED_EXTENSION = "vector"
 EXPECTED_TABLES = {
@@ -60,9 +61,15 @@ EXPECTED_INDEXES = {
 }
 
 
+def helper_available(path: Path) -> bool:
+    return path.exists() and not path.is_symlink() and path.is_file()
+
+
 def psql(sql: str) -> list[str]:
+    if not helper_available(DOCKER):
+        return ["__query_failed__"]
     proc = subprocess.run(
-        ["docker", "compose", "exec", "-T", "db", "psql", "-U", "br_app", "-d", "br_wissen", "-Atc", sql],
+        [str(DOCKER), "compose", "exec", "-T", "db", "psql", "-U", "br_app", "-d", "br_wissen", "-Atc", sql],
         cwd=str(ROOT),
         text=True,
         capture_output=True,

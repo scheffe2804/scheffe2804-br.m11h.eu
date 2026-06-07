@@ -18,6 +18,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parent.parent
+DOCKER = Path("/usr/bin/docker")
 
 CONTAINER_CHECK = r'''
 import http.client
@@ -83,8 +84,14 @@ def run(args: list[str], stdin: str | None = None) -> subprocess.CompletedProces
     return subprocess.run(args, cwd=str(ROOT), input=stdin, text=True, capture_output=True, check=False)
 
 
+def helper_available(path: Path) -> bool:
+    return path.exists() and not path.is_symlink() and path.is_file()
+
+
 def collect() -> tuple[int, dict[str, Any]]:
-    proc = run(["docker", "compose", "exec", "-T", "app", "python", "-"], CONTAINER_CHECK)
+    if not helper_available(DOCKER):
+        return 127, {}
+    proc = run([str(DOCKER), "compose", "exec", "-T", "app", "python", "-"], CONTAINER_CHECK)
     if proc.returncode != 0:
         return proc.returncode, {}
     try:

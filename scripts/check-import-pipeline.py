@@ -19,10 +19,18 @@ ROOT = Path(os.getenv("BR_APP_DIR", "/home/chris/web/br.m11h.eu"))
 STORAGE_ROOT = Path(os.getenv("BR_STORAGE_ROOT", "/srv/br-wissensdatenbank"))
 LOG_DIR = STORAGE_ROOT / "logs"
 DEFAULT_MAX_AGE_HOURS = float(os.getenv("BR_IMPORT_LOG_MAX_AGE_HOURS", "72"))
+SUDO = Path("/usr/bin/sudo")
+PYTHON = Path("/usr/bin/python3.13")
+SYSTEMCTL = Path("/usr/bin/systemctl")
+DOCKER = Path("/usr/bin/docker")
 
 
 def run(args: list[str], cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
     return subprocess.run(args, cwd=str(cwd) if cwd else None, text=True, capture_output=True, check=False)
+
+
+def helper_available(path: Path) -> bool:
+    return path.exists() and not path.is_symlink() and path.is_file()
 
 
 def latest_log(pattern: str) -> Path | None:
@@ -38,10 +46,12 @@ def read_log(path: Path) -> tuple[str, str]:
     except PermissionError:
         # Some logs are produced by root inside the container. chris has sudo on
         # this host; use non-interactive sudo only to read the local log text.
+        if not helper_available(SUDO) or not helper_available(PYTHON):
+            return "", "permission_denied"
         proc = run([
-            "sudo",
+            str(SUDO),
             "-n",
-            "python3",
+            str(PYTHON),
             "-c",
             "from pathlib import Path; import sys; sys.stdout.write(Path(sys.argv[1]).read_text(encoding='utf-8', errors='replace'))",
             str(path),
@@ -58,7 +68,9 @@ def age_hours(path: Path | None) -> float | None:
 
 
 def timer_active(unit: str) -> bool:
-    proc = run(["systemctl", "is-active", "--quiet", unit])
+    if not helper_available(SYSTEMCTL):
+        return False
+    proc = run([str(SYSTEMCTL), "is-active", "--quiet", unit])
     return proc.returncode == 0
 
 
@@ -88,7 +100,7 @@ SELECT 'recent_checked_72h=' || count(*)
 FROM sources WHERE last_checked_at >= now() - interval '72 hours';
 """
     proc = run([
-        "docker",
+        str(DOCKER),
         "compose",
         "exec",
         "-T",

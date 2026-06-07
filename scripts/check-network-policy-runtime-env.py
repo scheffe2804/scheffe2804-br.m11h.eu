@@ -18,6 +18,7 @@ from pathlib import Path
 ROOT = Path(os.getenv("BR_APP_DIR", "/home/chris/web/br.m11h.eu"))
 SYSTEMD_SRC = ROOT / "systemd"
 INSTALLED_SYSTEMD = Path("/etc/systemd/system")
+SYSTEMCTL = Path("/usr/bin/systemctl")
 
 NETWORK_POLICY_ENV_NAMES = {
     "BR_DIRECT_ORIGIN_PORT_TARGETS",
@@ -75,8 +76,14 @@ def run(args: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(args, text=True, capture_output=True, check=False)
 
 
+def helper_available(path: Path) -> bool:
+    return path.exists() and not path.is_symlink() and path.is_file()
+
+
 def unit_environment(unit: str) -> tuple[int, int, list[str]]:
-    proc = run(["systemctl", "show", unit, "--property=Environment,EnvironmentFiles", "--no-pager"])
+    if not helper_available(SYSTEMCTL):
+        return 1, 0, ["network_policy_runtime_systemctl_helper_unavailable"]
+    proc = run([str(SYSTEMCTL), "show", unit, "--property=Environment,EnvironmentFiles", "--no-pager"])
     if proc.returncode != 0:
         return 1, 0, ["network_policy_runtime_unit_unavailable=%s" % unit]
     hits = 0

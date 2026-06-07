@@ -28,6 +28,8 @@ EXPECTED_CREDENTIAL_PREFIX = "/run/br-secrets/cloudflared/"
 LOOPBACK_HOSTS = {"127.0.0.1", "localhost", "::1"}
 SUDO = Path("/usr/bin/sudo")
 NFT = Path("/usr/sbin/nft")
+DOCKER = Path("/usr/bin/docker")
+SS = Path("/usr/bin/ss")
 
 
 def run(args: list[str]) -> subprocess.CompletedProcess[str]:
@@ -39,7 +41,9 @@ def helper_available(path: Path) -> bool:
 
 
 def compose_ps() -> tuple[int, list[dict[str, Any]]]:
-    proc = run(["docker", "compose", "ps", "--format", "json"])
+    if not helper_available(DOCKER):
+        return 127, []
+    proc = run([str(DOCKER), "compose", "ps", "--format", "json"])
     if proc.returncode != 0:
         return proc.returncode, []
     stdout = proc.stdout.strip()
@@ -219,10 +223,13 @@ def split_listener(local: str) -> tuple[str, int]:
 
 
 def check_listener_scope(findings: list[str]) -> tuple[int, int, int]:
-    proc = run(["ss", "-H", "-ltn"])
     checks = 1
     listener_count = 0
     non_loopback_count = 0
+    if not helper_available(SS):
+        findings.append("ss_helper_unavailable")
+        return checks, listener_count, non_loopback_count
+    proc = run([str(SS), "-H", "-ltn"])
     if proc.returncode != 0:
         findings.append("ss_unavailable_scope")
         return checks, listener_count, non_loopback_count

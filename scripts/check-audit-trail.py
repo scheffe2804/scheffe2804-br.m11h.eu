@@ -13,6 +13,7 @@ from pathlib import Path
 
 
 ROOT = Path("/home/chris/web/br.m11h.eu")
+DOCKER = Path("/usr/bin/docker")
 
 # Historical tolerated gaps from early bootstrap/manual test exports before the
 # audit guard existed. Keep this list explicit so new gaps still fail.
@@ -30,9 +31,15 @@ LEGACY_EXPORT_AUDIT_GAPS = {
 LEGACY_ANSWER_CREATE_AUDIT_GAPS = {"a-src-test-0784dcd7"}
 
 
+def helper_available(path: Path) -> bool:
+    return path.exists() and not path.is_symlink() and path.is_file()
+
+
 def run_sql(sql: str) -> tuple[int, list[str]]:
+    if not helper_available(DOCKER):
+        return 127, []
     proc = subprocess.run(
-        ["docker", "compose", "exec", "-T", "db", "psql", "-U", "br_app", "-d", "br_wissen", "-Atc", sql],
+        [str(DOCKER), "compose", "exec", "-T", "db", "psql", "-U", "br_app", "-d", "br_wissen", "-Atc", sql],
         cwd=str(ROOT),
         text=True,
         capture_output=True,

@@ -76,7 +76,7 @@ COVERAGE_GROUPS: dict[str, dict[str, list[str] | str]] = {
     },
     "import_source_hardening": {
         "guard": "check-import-source-hardening.py",
-        "targets": [],
+        "targets": ["check-import-pipeline.py"],
     },
     "data_integrity_source_hardening": {
         "guard": "check-data-integrity-source-hardening.py",
@@ -149,7 +149,6 @@ SOURCE_HARDENING_GUARDS = sorted(
 
 EXPLICIT_EXCEPTIONS = {
     "check-cloudflare-staging-pattern.sh": "legacy_manual_helper_not_in_status_backup_or_healthcheck",
-    "check-import-pipeline.py": "runtime_guard_wired_by_guard_coverage_not_static_import_source_target",
 }
 
 

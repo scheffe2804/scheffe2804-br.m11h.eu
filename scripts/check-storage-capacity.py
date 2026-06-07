@@ -20,6 +20,7 @@ APP_DIR = Path(os.getenv("BR_APP_DIR", "/home/chris/web/br.m11h.eu"))
 STORAGE_ROOT = Path(os.getenv("BR_STORAGE_ROOT", "/srv/br-wissensdatenbank"))
 TMP_DIR = Path(os.getenv("BR_TMP_DIR", "/tmp"))
 DOCKER_ROOT = Path(os.getenv("BR_DOCKER_ROOT", "/var/lib/docker"))
+DOCKER = Path("/usr/bin/docker")
 
 GIB = 1024 ** 3
 MIN_FREE_DEFAULT_GIB = float(os.getenv("BR_CAPACITY_MIN_FREE_GIB", "10"))
@@ -31,6 +32,10 @@ MAX_INODE_USED_PERCENT = float(os.getenv("BR_CAPACITY_MAX_INODE_USED_PERCENT", "
 
 def run(args: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(args, text=True, capture_output=True, check=False)
+
+
+def helper_available(path: Path) -> bool:
+    return path.exists() and not path.is_symlink() and path.is_file()
 
 
 def stat_path(label: str, path: Path, min_free_gib: float) -> dict[str, Any]:
@@ -56,7 +61,9 @@ def stat_path(label: str, path: Path, min_free_gib: float) -> dict[str, Any]:
 
 
 def docker_summary() -> dict[str, Any]:
-    proc = run(["docker", "system", "df", "--format", "json"])
+    if not helper_available(DOCKER):
+        return {"available": False, "types": 0, "size_bytes": 0, "reclaimable_bytes": 0}
+    proc = run([str(DOCKER), "system", "df", "--format", "json"])
     if proc.returncode != 0:
         return {"available": False, "types": 0, "size_bytes": 0, "reclaimable_bytes": 0}
     types = 0

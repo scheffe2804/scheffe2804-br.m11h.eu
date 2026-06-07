@@ -30,6 +30,8 @@ LOOPBACK_HOSTS = {"127.0.0.1", "::1", "localhost"}
 PORTS_RAW = [item.strip() for item in os.getenv("BR_HOST_UDP_PORTS", DEFAULT_PORTS).split(",") if item.strip()]
 ALLOWED_RAW = [item.strip() for item in os.getenv("BR_HOST_UDP_ALLOWED_OPEN_PORTS", DEFAULT_ALLOWED_OPEN_PORTS).split(",") if item.strip()]
 DIRECT_HOSTS = {item.strip().strip("[]") for item in os.getenv("BR_HOST_UDP_DIRECT_HOSTS", DEFAULT_DIRECT_HOSTS).split(",") if item.strip()}
+DOCKER = Path("/usr/bin/docker")
+SS = Path("/usr/bin/ss")
 
 
 def load_context_direct_hosts() -> set[str]:
@@ -54,6 +56,10 @@ DIRECT_HOSTS.update(load_context_direct_hosts())
 
 def run(args: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(args, cwd=str(ROOT), text=True, capture_output=True, check=False)
+
+
+def helper_available(path: Path) -> bool:
+    return path.exists() and not path.is_symlink() and path.is_file()
 
 
 def parse_ports(values: list[str]) -> tuple[list[int], list[str]]:
@@ -109,11 +115,14 @@ def host_is_direct_exposure(host: str) -> bool:
 
 
 def collect_udp_listeners(findings: list[str]) -> tuple[int, list[tuple[str, int]], int, int]:
-    proc = run(["ss", "-H", "-lun"])
     checks = 1
     relevant: list[tuple[str, int]] = []
     loopback_relevant = 0
     direct_relevant = 0
+    if not helper_available(SS):
+        findings.append("host_udp_ss_helper_unavailable")
+        return checks, relevant, loopback_relevant, direct_relevant
+    proc = run([str(SS), "-H", "-lun"])
     if proc.returncode != 0:
         findings.append("host_udp_ss_unavailable_rc=%d" % proc.returncode)
         return checks, relevant, loopback_relevant, direct_relevant
@@ -137,8 +146,11 @@ def collect_udp_listeners(findings: list[str]) -> tuple[int, list[tuple[str, int
 
 
 def compose_ps(findings: list[str]) -> tuple[int, list[dict[str, Any]]]:
-    proc = run(["docker", "compose", "ps", "--format", "json"])
     checks = 1
+    if not helper_available(DOCKER):
+        findings.append("host_udp_docker_helper_unavailable")
+        return checks, []
+    proc = run([str(DOCKER), "compose", "ps", "--format", "json"])
     if proc.returncode != 0:
         findings.append("host_udp_compose_ps_unavailable_rc=%d" % proc.returncode)
         return checks, []
