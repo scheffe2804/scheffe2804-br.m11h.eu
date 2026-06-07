@@ -14,8 +14,10 @@ Credential-Inhalte, Passwoerter, Tokens oder Dump-Inhalte.
 - Sensible Quellen, Texte, Exporte, Dumps und Logs: geschuetzter interner
   Datenbereich unter `/srv/br-wissensdatenbank`.
 - Projektprotokoll: `/home/chris/web/diverses/betriebsrat.md`.
-- Projekt ist derzeit kein Git-Repo; Nachvollziehbarkeit laeuft ueber Protokoll
-  und verschluesselte Backups.
+- GitHub-Repo: `scheffe2804/scheffe2804-br.m11h.eu`.
+- Nachvollziehbarkeit laeuft ueber GitHub-Remote `origin`, Projektprotokoll und
+  verschluesselte Backups; Secret-, Dump-, Credential-, Backup- und Runtime-
+  Artefakte duerfen nicht versioniert werden.
 
 ## Laufender Stack
 
@@ -183,7 +185,11 @@ Aktive Schutzschichten:
      `/home/chris/web/diverses/betriebsrat.md` auf Struktur, aktuelle Guardrail-,
      Backup-/Restore-/Healthcheck-Marker, Restic-Einbindung und offensichtliche
      Keine-Secrets-/Credential-Marker.
-42g. Backup-Scope-Guard fuer die read-only Restic-Snapshot-Metadatenpruefung des
+42g. Git-Remote-Readiness fuer die read-only Pruefung von Branch `main`, GitHub-
+     Remote `git@github.com:scheffe2804/scheffe2804-br.m11h.eu.git`, Tracking auf
+     `origin/main`, Remote-HEAD-Abgleich und Git-Index-Schutz gegen typische
+     Secret-/Dump-/Credential-/Backup-/Runtime-Artefakte.
+42h. Backup-Scope-Guard fuer die read-only Restic-Snapshot-Metadatenpruefung des
      neuesten BR-Wissen-Backups auf erwarteten Host, erwartete Tags und erwarteten
      Backup-Pfadumfang fuer App, internen Datenbereich und Projektprotokoll.
 42h. Backup-Runtime-Policy-Guard fuer die read-only Metadatenpruefung von
@@ -312,6 +318,7 @@ Aktueller Guard-Stand laut read-only Status-/Summary-Pruefungen vom 2026-06-06:
 - Surface-Registry-Guard: `surface_registry_status=ok`.
 - Guard-Registry-Integrity: `guard_registry_integrity_status=ok`.
 - Protocol-Integrity-Guard: `protocol_integrity_status=ok`.
+- Git-Remote-Readiness: `git_remote_readiness_status=ok branch=main tracking=1 dirty=0 remote_head_present=1 sensitive_tracked=0`.
 - Backup-Scope-Guard: `backup_scope_status=ok checks=8 findings=0 snapshots=48 latest_snapshot=2908e56d tags=2 paths=3 expected_paths=3`.
 - Backup-Runtime-Policy-Guard: `backup_runtime_policy_status=ok checks=27 findings=0 backup_env_mode=600 backup_env_parent_mode=700 restic_mode=755 service_mode=644 service_user_root=1`.
 - Restic-Repository-Check-Freshness: `restic_repository_check_status=ok checks=10 findings=0 last_check=2026-06-06T06:25:14Z age_h=27.8 snapshots=48 documented_success=1 max_age_h=720.0 lock_preflight=0`.

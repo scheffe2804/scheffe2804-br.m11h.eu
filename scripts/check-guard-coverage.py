@@ -83,6 +83,7 @@ GUARDS: list[GuardSpec] = [
     GuardSpec("Surface-Registry-Guard", "check-surface-registry.py", "surface_registry_status", "Surface-Registry-Guard", "surface_registry"),
     GuardSpec("Guard-Registry-Integrity", "check-guard-registry-integrity.py", "guard_registry_integrity_status", "Guard-Registry-Integrity", "guard_registry_integrity"),
     GuardSpec("Protocol-Integrity-Guard", "check-protocol-integrity.py", "protocol_integrity_status", "Protocol-Integrity-Guard", "protocol_integrity"),
+    GuardSpec("Git-Remote-Readiness", "check-git-remote-readiness.py", "git_remote_readiness_status", "Git-Remote-Readiness", "git_remote_readiness"),
     GuardSpec("Runtime-Log-Marker", "check-runtime-log-markers.sh", "runtime_log_marker_status", "Runtime-Log-Marker", None, in_backup=False, healthcheck_args=""),
     GuardSpec("Access-Runtime-Source-Hardening", "check-access-runtime-source-hardening.py", "access_runtime_source_hardening_status", "Access-Runtime-Source-Hardening", "access_runtime_source_hardening"),
     GuardSpec("Runtime-HTTP-Security", "check-runtime-http-security.py", "runtime_http_security_status", "Runtime-HTTP-Security", "runtime_http_security"),

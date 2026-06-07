@@ -121,6 +121,7 @@ chmod 640 "$LOG_FILE"
   run_preflight surface_registry "${APP_DIR}/scripts/check-surface-registry.py" --summary
   run_preflight guard_registry_integrity "${APP_DIR}/scripts/check-guard-registry-integrity.py" --summary
   run_preflight protocol_integrity "${APP_DIR}/scripts/check-protocol-integrity.py" --summary
+  run_preflight git_remote_readiness "${APP_DIR}/scripts/check-git-remote-readiness.py" --summary
   run_preflight access_runtime_source_hardening "${APP_DIR}/scripts/check-access-runtime-source-hardening.py" --summary
   run_preflight runtime_http_security "${APP_DIR}/scripts/check-runtime-http-security.py" --summary
   run_preflight external_access_surface "${APP_DIR}/scripts/check-external-access-surface.py" --summary

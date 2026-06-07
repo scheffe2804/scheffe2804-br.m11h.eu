@@ -71,6 +71,7 @@ SERVICE_EXPECTATIONS: dict[str, dict[str, str | list[str]]] = {
             "/home/chris/web/br.m11h.eu/scripts/check-surface-registry.py --summary",
             "/home/chris/web/br.m11h.eu/scripts/check-guard-registry-integrity.py --summary",
             "/home/chris/web/br.m11h.eu/scripts/check-protocol-integrity.py --summary",
+            "/home/chris/web/br.m11h.eu/scripts/check-git-remote-readiness.py --summary",
             "/home/chris/web/br.m11h.eu/scripts/check-runtime-log-markers.sh",
             "/home/chris/web/br.m11h.eu/scripts/check-access-runtime-source-hardening.py --summary",
             "/home/chris/web/br.m11h.eu/scripts/check-runtime-http-security.py --summary",

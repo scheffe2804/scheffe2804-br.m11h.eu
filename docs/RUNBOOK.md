@@ -730,6 +730,37 @@ Der Guard laeuft auch:
 - als `ExecStartPre` im systemd-Healthcheck,
 - als Preflight im Backup-Skript vor Dump/Restic.
 
+## Git-Remote-Readiness pruefen
+
+```bash
+cd /home/chris/web/br.m11h.eu
+scripts/check-git-remote-readiness.py
+scripts/check-git-remote-readiness.py --summary
+```
+
+Der Guard ist read-only und prueft ausschliesslich Git-Metadaten des Projektbaums
+und die GitHub-Remote-Head-Sicht. Erwartet werden Branch `main`, Remote
+`git@github.com:scheffe2804/scheffe2804-br.m11h.eu.git`, Tracking auf
+`origin/main`, gleicher lokaler und remote HEAD, ein sauberer Arbeitsbaum und ein
+Git-Index ohne typische Secret-, Dump-, Credential-, Backup- oder Runtime-
+Artefakte. `.env.example` ist als nicht-sensitives Beispiel bewusst erlaubt.
+
+Der Guard liest keine Secretdateien, gibt keine Diffs oder Dateiinhalte aus und
+fuehrt kein Commit, Push, Pull, Fetch, Backup, Restore, Docker, `systemctl`,
+Import, Regression oder DB-Abfragen aus. Aktueller Marker:
+`git_remote_readiness_status=ok` fuer GitHub-Repo
+`scheffe2804/scheffe2804-br.m11h.eu`.
+
+Der Guard laeuft auch:
+
+- im normalen Statuscheck unter `Git-Remote-Readiness`,
+- als `ExecStartPre` im systemd-Healthcheck,
+- als Preflight im Backup-Skript vor Dump/Restic.
+
+Bei laufender Entwicklung darf der Einzelaufruf wegen `dirty=1` rot sein; vor
+Backup-/Healthcheck-Abschluss muss der Arbeitsstand committed und nach GitHub
+gepusht sein.
+
 ## Backup-Scope-Guard pruefen
 
 ```bash

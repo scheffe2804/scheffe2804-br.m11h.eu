@@ -102,6 +102,7 @@ EXPECTED_PREFLIGHTS = [
     ("surface_registry", "check-surface-registry.py", "--summary"),
     ("guard_registry_integrity", "check-guard-registry-integrity.py", "--summary"),
     ("protocol_integrity", "check-protocol-integrity.py", "--summary"),
+    ("git_remote_readiness", "check-git-remote-readiness.py", "--summary"),
     ("access_runtime_source_hardening", "check-access-runtime-source-hardening.py", "--summary"),
     ("runtime_http_security", "check-runtime-http-security.py", "--summary"),
     ("external_access_surface", "check-external-access-surface.py", "--summary"),

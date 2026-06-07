@@ -182,6 +182,7 @@ def collect_local_info() -> dict[str, Any]:
         "surface_registry_status=ok",
         "guard_registry_integrity_status=ok",
         "protocol_integrity_status=ok",
+        "git_remote_readiness_status=ok",
         "access_runtime_source_hardening_status=ok",
         "status_source_hardening_status=ok",
         "healthcheck_source_hardening_status=ok",

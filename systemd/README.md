@@ -64,6 +64,7 @@ ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-summary-contracts.py --sum
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-surface-registry.py --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-guard-registry-integrity.py --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-protocol-integrity.py --summary
+ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-git-remote-readiness.py --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-runtime-log-markers.sh
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-access-runtime-source-hardening.py --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-runtime-http-security.py --summary
@@ -370,7 +371,11 @@ ausfuehrbare Skripte, Statuskey-/Backup-Label-Formen und Argumentvertraege, ohne
 Guards oder Runtime-Kommandos auszufuehren. Der Protocol-Integrity-Guard prueft
 das Projektprotokoll und dessen Backup-Einbindung auf Struktur-, Guardrail-,
 Backup-/Restore-/Healthcheck- und Keine-Secrets-Marker, ohne Guards oder Runtime-
-Kommandos auszufuehren.
+Kommandos auszufuehren. Der Git-Remote-Readiness-Guard prueft Branch `main`,
+Remote `git@github.com:scheffe2804/scheffe2804-br.m11h.eu.git`, Tracking auf
+`origin/main`, Remote-HEAD-Abgleich und Index-Schutz gegen typische Secret-/Dump-
+Artefakte; erwarteter Marker ist `git_remote_readiness_status=ok` fuer das
+GitHub-Repo `scheffe2804/scheffe2804-br.m11h.eu`.
 Der Container-Source-Hardening-Guard prueft die Container-/Image-Guardquellen auf
 metadata-only Docker-Inspect-, Compose-Image-, Dockerfile-`FROM`-, Digest-Pinning-
 und Readiness-Summary-Marker, ohne Docker, Compose oder Registry-Lookups

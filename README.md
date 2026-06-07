@@ -423,6 +423,30 @@ Logs, Antworttexte oder Quelleninhalte und ruft keine Guards, kein Docker, kein
 Der Guard laeuft im normalen Statuscheck, im systemd-Healthcheck-Preflight und im
 Backup-Preflight vor Dump/Restic.
 
+### Git-Remote-Readiness pruefen
+
+```bash
+scripts/check-git-remote-readiness.py
+scripts/check-git-remote-readiness.py --summary
+```
+
+Der Guard ist read-only und validiert, dass der Projektbaum ein sauberes Git-Repo
+auf Branch `main` ist, `origin` auf
+`git@github.com:scheffe2804/scheffe2804-br.m11h.eu.git` zeigt, `main` nach
+`origin/main` trackt, lokaler HEAD und GitHub-Remote-HEAD uebereinstimmen und im
+Git-Index keine typischen Secret-, Dump-, Credential-, Backup- oder Runtime-
+Artefakte versioniert sind. `.env.example` ist die einzige bewusst erlaubte
+Env-Datei im Index. Der Guard liest keine Secretdateien, gibt keine Diffs oder
+Dateiinhalte aus und fuehrt kein Commit, Push, Pull, Fetch, Backup, Restore,
+Docker, `systemctl`, Import, Regression oder DB-Abfragen aus. Aktueller erwarteter
+Marker ist `git_remote_readiness_status=ok` fuer das GitHub-Repo
+`scheffe2804/scheffe2804-br.m11h.eu`.
+
+Der Guard laeuft im normalen Statuscheck, im systemd-Healthcheck-Preflight und im
+Backup-Preflight vor Dump/Restic. Waehrend eines bewusst offenen Arbeitsblocks ist
+`dirty=1` erwartbar; vor Backup-/Healthcheck-Abschluss muss der Arbeitsbaum durch
+Commit und Push wieder sauber sein.
+
 ### Host-Kontext-Guard pruefen
 
 ```bash

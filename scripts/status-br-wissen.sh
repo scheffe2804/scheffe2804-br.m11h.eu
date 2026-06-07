@@ -203,6 +203,10 @@ echo "## Protocol-Integrity-Guard"
 scripts/check-protocol-integrity.py --summary
 echo
 
+echo "## Git-Remote-Readiness"
+scripts/check-git-remote-readiness.py --summary
+echo
+
 echo "## Python-Syntax-Guard"
 scripts/check-python-syntax.sh --summary
 echo

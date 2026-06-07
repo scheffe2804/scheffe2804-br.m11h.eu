@@ -122,6 +122,7 @@ def main() -> int:
         "Surface-Registry-Guard",
         "Guard-Registry-Integrity",
         "Protocol-Integrity-Guard",
+        "Git-Remote-Readiness",
         "Regression-Source-Hardening",
         "Host-Kontext-Guard",
         "Time-Sync-Guard",
@@ -157,7 +158,7 @@ def main() -> int:
         "App-Auth-Surface",
         "Import-Source-Hardening",
         "Data-Integrity-Source-Hardening",
-        "Projekt ist derzeit kein Git-Repo",
+        "GitHub-Repo: `scheffe2804/scheffe2804-br.m11h.eu`",
     ]
     for literal in required_literals:
         checks += 1
@@ -214,6 +215,7 @@ def main() -> int:
         ("check-surface-registry.py", "surface_registry_status", "surface_registry_status", "ok"),
         ("check-guard-registry-integrity.py", "guard_registry_integrity_status", "guard_registry_integrity_status", "ok"),
         ("check-protocol-integrity.py", "protocol_integrity_status", "protocol_integrity_status", "ok"),
+        ("check-git-remote-readiness.py", "git_remote_readiness_status", "git_remote_readiness_status", "ok"),
         ("check-storage-capacity.py", "storage_capacity_status", "storage_capacity_status", "ok"),
         ("check-import-pipeline.py", "import_pipeline_status", "import_pipeline_status", "ok"),
         ("check-import-source-hardening.py", "import_source_hardening_status", "import_source_hardening_status", "ok"),
@@ -294,6 +296,7 @@ def main() -> int:
         "surface_registry_status=ok",
         "guard_registry_integrity_status=ok",
         "protocol_integrity_status=ok",
+        "git_remote_readiness_status=ok",
         "backup_freshness_status=ok",
         "helper_binaries=5",
         "restic_binary=/usr/bin/restic",

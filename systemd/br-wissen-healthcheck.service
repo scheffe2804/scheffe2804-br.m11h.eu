@@ -49,6 +49,7 @@ ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-summary-contracts.py --sum
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-surface-registry.py --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-guard-registry-integrity.py --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-protocol-integrity.py --summary
+ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-git-remote-readiness.py --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-runtime-log-markers.sh
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-access-runtime-source-hardening.py --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-runtime-http-security.py --summary

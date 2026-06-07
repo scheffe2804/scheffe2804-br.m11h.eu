@@ -112,6 +112,7 @@ COVERAGE_GROUPS: dict[str, dict[str, list[str] | str]] = {
             "check-surface-registry.py",
             "check-guard-registry-integrity.py",
             "check-protocol-integrity.py",
+            "check-git-remote-readiness.py",
         ],
     },
 }
@@ -138,6 +139,7 @@ SOURCE_HARDENING_GUARDS = sorted(
         "check-surface-registry.py",
         "check-guard-registry-integrity.py",
         "check-protocol-integrity.py",
+        "check-git-remote-readiness.py",
         "check-status-source-hardening.py",
         "check-storage-source-hardening.py",
         "check-systemd-source-hardening.py",

@@ -58,6 +58,7 @@ BACKUP_MARKERS: list[tuple[str, str]] = [
     ("surface_registry_marker", "surface_registry_status=ok"),
     ("guard_registry_integrity_marker", "guard_registry_integrity_status=ok"),
     ("protocol_integrity_marker", "protocol_integrity_status=ok"),
+    ("git_remote_readiness_marker", "git_remote_readiness_status=ok"),
     ("regression_source_marker", "regression_source_hardening_status=ok"),
     ("protocol_marker", "protocol_file_status=included"),
     ("script", "SCRIPT = Path(__file__).resolve()"),

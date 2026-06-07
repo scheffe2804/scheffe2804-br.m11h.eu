@@ -29,6 +29,7 @@ SUMMARY_CONTRACTS = ROOT / "scripts" / "check-summary-contracts.py"
 SURFACE_REGISTRY = ROOT / "scripts" / "check-surface-registry.py"
 GUARD_REGISTRY_INTEGRITY = ROOT / "scripts" / "check-guard-registry-integrity.py"
 PROTOCOL_INTEGRITY = ROOT / "scripts" / "check-protocol-integrity.py"
+GIT_REMOTE_READINESS = ROOT / "scripts" / "check-git-remote-readiness.py"
 BACKUP_SCOPE = ROOT / "scripts" / "check-backup-scope.py"
 
 
@@ -268,6 +269,29 @@ PROTOCOL_INTEGRITY_MARKERS: list[tuple[str, str]] = [
 # check-protocol-integrity.py
 
 
+GIT_REMOTE_READINESS_MARKERS: list[tuple[str, str]] = [
+    ("docstring_read_only", "Read-only Git/GitHub remote readiness guard for BR-Wissen"),
+    ("expected_branch", "EXPECTED_BRANCH = os.getenv(\"BR_GIT_EXPECTED_BRANCH\", \"main\")"),
+    ("expected_remote", "EXPECTED_REMOTE = os.getenv(\"BR_GIT_EXPECTED_REMOTE\", \"git@github.com:scheffe2804/scheffe2804-br.m11h.eu.git\")"),
+    ("expected_remote_head", "EXPECTED_REMOTE_HEAD = os.getenv(\"BR_GIT_EXPECTED_REMOTE_HEAD\", \"refs/heads/main\")"),
+    ("allowed_env", "ALLOWED_TRACKED_ENV = {\".env.example\"}"),
+    ("required_ignores", "REQUIRED_IGNORES = ["),
+    ("cloudflared_ignore", "cloudflared/config.yml"),
+    ("sensitive_patterns", "SENSITIVE_TRACKED_PATTERNS = ["),
+    ("run_git", "def run_git(args: list[str]) -> tuple[int, str]:"),
+    ("status_porcelain", "run_git([\"status\", \"--porcelain\"])"),
+    ("remote_get_url", "run_git([\"remote\", \"get-url\", \"origin\"])"),
+    ("upstream", "run_git([\"rev-parse\", \"--abbrev-ref\", \"--symbolic-full-name\", \"@{u}\"])"),
+    ("remote_head", "run_git([\"ls-remote\", \"--heads\", \"origin\", EXPECTED_BRANCH])"),
+    ("tracked_files", "run_git([\"ls-files\"])"),
+    ("sensitive_tracked", "git_sensitive_tracked=%d"),
+    ("summary", "git_remote_readiness_status=%s checks=%d findings=%d branch=%s tracking=%d dirty=%d"),
+]
+
+# Meta-governance inventory marker for source-hardening coverage:
+# check-git-remote-readiness.py
+
+
 BACKUP_SCOPE_MARKERS: list[tuple[str, str]] = [
     ("docstring_read_only", "Read-only Restic backup scope guard for BR-Wissen"),
     ("app_dir", "APP_DIR = Path(os.getenv(\"BR_APP_DIR\", \"/home/chris/web/br.m11h.eu\"))"),
@@ -370,8 +394,9 @@ def main() -> int:
     surface_registry_text = read_source(SURFACE_REGISTRY, findings, "surface_registry")
     guard_registry_integrity_text = read_source(GUARD_REGISTRY_INTEGRITY, findings, "guard_registry_integrity")
     protocol_integrity_text = read_source(PROTOCOL_INTEGRITY, findings, "protocol_integrity")
+    git_remote_readiness_text = read_source(GIT_REMOTE_READINESS, findings, "git_remote_readiness")
     backup_scope_text = read_source(BACKUP_SCOPE, findings, "backup_scope")
-    checks += 12
+    checks += 13
 
     checks += check_markers(findings, coverage_text, GUARD_COVERAGE_MARKERS, "coverage")
     checks += check_markers(findings, readiness_text, READINESS_DOC_MARKERS, "readiness")
@@ -384,6 +409,7 @@ def main() -> int:
     checks += check_markers(findings, surface_registry_text, SURFACE_REGISTRY_MARKERS, "surface_registry")
     checks += check_markers(findings, guard_registry_integrity_text, GUARD_REGISTRY_INTEGRITY_MARKERS, "guard_registry_integrity")
     checks += check_markers(findings, protocol_integrity_text, PROTOCOL_INTEGRITY_MARKERS, "protocol_integrity")
+    checks += check_markers(findings, git_remote_readiness_text, GIT_REMOTE_READINESS_MARKERS, "git_remote_readiness")
     checks += check_markers(findings, backup_scope_text, BACKUP_SCOPE_MARKERS, "backup_scope")
 
     for prefix, text in [
@@ -398,6 +424,7 @@ def main() -> int:
         ("surface_registry", surface_registry_text),
         ("guard_registry_integrity", guard_registry_integrity_text),
         ("protocol_integrity", protocol_integrity_text),
+        ("git_remote_readiness", git_remote_readiness_text),
         ("backup_scope", backup_scope_text),
     ]:
         checks += check_forbidden(findings, text, FORBIDDEN_COMMON_MARKERS, prefix)
@@ -436,11 +463,14 @@ def main() -> int:
     if protocol_integrity_text.find("REQUIRED_PROTOCOL_MARKERS") > protocol_integrity_text.find("check_markers(findings, protocol_text"):
         findings.append("protocol_integrity_markers_after_use")
     checks += 1
+    if git_remote_readiness_text.find("REQUIRED_IGNORES") > git_remote_readiness_text.find("missing_ignores ="):
+        findings.append("git_remote_readiness_required_ignores_after_use")
+    checks += 1
     if backup_scope_text.find("EXPECTED_PATHS") > backup_scope_text.find("missing_paths = sorted"):
         findings.append("backup_scope_expected_paths_after_use")
 
     status = "ok" if not findings else "failed"
-    summary = "meta_source_hardening_status=%s checks=%d findings=%d coverage_markers=%d readiness_markers=%d python_syntax_markers=%d shell_syntax_markers=%d systemd_unit_markers=%d doc_source_markers=%d source_coverage_markers=%d summary_contract_markers=%d surface_registry_markers=%d guard_registry_integrity_markers=%d protocol_integrity_markers=%d backup_scope_markers=%d forbidden_markers=%d" % (
+    summary = "meta_source_hardening_status=%s checks=%d findings=%d coverage_markers=%d readiness_markers=%d python_syntax_markers=%d shell_syntax_markers=%d systemd_unit_markers=%d doc_source_markers=%d source_coverage_markers=%d summary_contract_markers=%d surface_registry_markers=%d guard_registry_integrity_markers=%d protocol_integrity_markers=%d git_remote_readiness_markers=%d backup_scope_markers=%d forbidden_markers=%d" % (
         status,
         checks,
         len(findings),
@@ -455,8 +485,9 @@ def main() -> int:
         len(SURFACE_REGISTRY_MARKERS),
         len(GUARD_REGISTRY_INTEGRITY_MARKERS),
         len(PROTOCOL_INTEGRITY_MARKERS),
+        len(GIT_REMOTE_READINESS_MARKERS),
         len(BACKUP_SCOPE_MARKERS),
-        len(FORBIDDEN_COMMON_MARKERS) * 12,
+        len(FORBIDDEN_COMMON_MARKERS) * 13,
     )
     if args.summary:
         print(summary)
