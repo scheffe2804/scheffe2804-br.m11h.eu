@@ -1171,8 +1171,14 @@ Metadaten, `/tmp`-Policy sowie installierte Restore-Smoke-Service-/Timer-Policy
 mit `User=root`, erwarteter `ExecStart`-/`WorkingDirectory`-Verdrahtung und
 persistenter Wochenplanung. Er liest keine Backup-Env-Inhalte, keine Secretwerte,
 Dumps, Logs, Antworttexte, Exporte oder Quelleninhalte und startet keine Backups,
-Restores, Docker, Imports, Regressionen oder DB-Abfragen. Die Summary zeigt nur
-Status, Zaehler, Dateimodi und zentrale Service-/Timer-Policy-Bits. Der Guard
+Restores, Docker, Imports, Regressionen oder DB-Abfragen. Der root-noetige JSON-
+Hilfsmodus wird ueber `/usr/bin/sudo` gestartet; Restic und Docker werden nur aus
+kuratierten absoluten Pfaden (`/usr/bin/restic`, `/usr/local/bin/restic`,
+`/usr/bin/docker`, `/usr/local/bin/docker`) ausgewaehlt und metadata-only auf
+Datei-/Owner-/Mode-/Symlink-/Sonderbit-Policy geprueft. Die Summary zeigt nur
+Status, Zaehler, Dateimodi, zentrale Service-/Timer-Policy-Bits und
+Helfermetadaten (`helper_binaries=<n>`, `restic_binary=<pfad>`,
+`docker_binary=<pfad>`). Der Guard
 laeuft im normalen Statuscheck, im systemd-Healthcheck-Preflight und im Backup-
 Preflight vor Dump/Restic.
 
@@ -1213,8 +1219,11 @@ die installierte Backup-Service-Policy mit `User=root` und erwarteter
 `ExecStart`-/`WorkingDirectory`-Verdrahtung. Er liest keine Backup-Env-Inhalte,
 keine Secretwerte, Dumps, Logs, Antworttexte, Exporte oder Quelleninhalte und
 startet keine Backups, Restores, Docker, Imports, Regressionen oder DB-Abfragen.
-Die Summary zeigt nur Status, Zaehler, Dateimodi und ob der Backup-Service als
-root konfiguriert ist. Der Guard laeuft im normalen Statuscheck, im
+Der root-noetige JSON-Hilfsmodus wird ueber `/usr/bin/sudo` gestartet; Restic wird
+nur aus `/usr/bin/restic` oder `/usr/local/bin/restic` ausgewaehlt und metadata-
+only auf Datei-/Owner-/Mode-/Symlink-/Sonderbit-Policy geprueft. Die Summary zeigt
+nur Status, Zaehler, Dateimodi, ob der Backup-Service als root konfiguriert ist
+und Helfermetadaten (`helper_binaries=<n>`, `restic_binary=<pfad>`). Der Guard laeuft im normalen Statuscheck, im
 systemd-Healthcheck-Preflight und im Backup-Preflight vor Dump/Restic.
 Der Backup-Wrapper selbst nutzt denselben kuratierten Restic-Pfadumfang
 (`/usr/bin/restic` oder `/usr/local/bin/restic`) fuer `backup` und `forget`.

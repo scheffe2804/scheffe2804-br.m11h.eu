@@ -279,7 +279,11 @@ unqualifizierten Root-`PATH`; die Summary meldet `helper_binaries=<n>` und
 metadata-only Backup-Env-Datei, Backup-Env-Elternverzeichnis, Restic-Binary und
 installierte Backup-Service-Policy, ohne Backup-Env-Inhalte oder Secretwerte zu
 lesen und ohne Backups, Restores, Docker, Imports, Regressionen oder DB-Abfragen
-auszufuehren. Der Backup-Freshness-Guard prueft zusaetzlich, ob lokale
+auszufuehren. Sein root-noetiger JSON-Hilfsmodus nutzt `/usr/bin/sudo`; Restic
+wird nur aus `/usr/bin/restic` oder `/usr/local/bin/restic` ausgewaehlt und
+metadata-only auf Symlink-Freiheit, regulaere Datei, `root:root`, Modus,
+Ausfuehrbarkeit und unerwartete Sonderbits geprueft. Die Summary meldet
+`helper_binaries=<n>` und `restic_binary=<pfad>`. Der Backup-Freshness-Guard prueft zusaetzlich, ob lokale
 Dumps/Logs und der neueste Restic-Snapshot aktuell und konsistent sind. Er
 validiert ausserdem nachgelagert, dass der neueste Restic-Snapshot den aktuellen
 Projektprotokollstand abdeckt (`protocol_snapshot_current=1`), bewusst nicht als
@@ -307,7 +311,12 @@ Restic-Restore-, isolierte DB-Restore-, Cleanup- und Retention-Marker, ohne
 Restore, Restic, Docker, `sudo` oder `systemctl` aufzurufen. Der Restore-Runtime-Policy-Guard
 prueft metadata-only Restore-Smoke-Service-/Timer-Policy, Restore-
 Skriptmodi, Restic-/Docker-Binaries, Backup-Env-Rechte und `/tmp`-Policy, ohne
-Restore, Docker, Backups, Imports, Regressionen oder DB-Abfragen auszufuehren. Der
+Restore, Docker, Backups, Imports, Regressionen oder DB-Abfragen auszufuehren.
+Sein root-noetiger JSON-Hilfsmodus nutzt `/usr/bin/sudo`; Restic und Docker
+werden nur aus `/usr/bin/restic` oder `/usr/local/bin/restic` bzw.
+`/usr/bin/docker` oder `/usr/local/bin/docker` ausgewaehlt und metadata-only auf
+Datei-/Owner-/Mode-/Symlink-/Sonderbit-Policy geprueft. Die Summary meldet
+`helper_binaries=<n>`, `restic_binary=<pfad>` und `docker_binary=<pfad>`. Der
 Storage-/Permission-Guard prueft
 abschliessend nur Metadaten zu Storage-, Secret-, Dump-, Log- und Exportrechten;
 Secret-, Dump- oder Log-Inhalte werden dabei nicht ausgegeben. Der

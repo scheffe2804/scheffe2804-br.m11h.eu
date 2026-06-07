@@ -849,7 +849,12 @@ installierte Backup-Service-Policy. Erwartet werden root-only Backup-Env-Rechte,
 restriktiver Parent-Modus, ein nicht setuid/setgid gesetztes Restic-Binary und
 `User=root` fuer `br-wissen-backup.service`. Er liest keine Backup-Env-Inhalte,
 Secretwerte, Dumps, Logs, Antworten, Exporte oder Quelleninhalte und startet
-keine Backups, Restores, Docker, Imports, Regressionen oder DB-Abfragen.
+keine Backups, Restores, Docker, Imports, Regressionen oder DB-Abfragen. Der
+root-noetige JSON-Hilfsmodus nutzt `/usr/bin/sudo`; Restic wird nur aus
+`/usr/bin/restic` oder `/usr/local/bin/restic` ausgewaehlt und metadata-only auf
+Symlink-Freiheit, regulaere Datei, `root:root`, Modus, Ausfuehrbarkeit und
+unerwartete Sonderbits geprueft. Die Summary zeigt `helper_binaries=<n>` und
+`restic_binary=<pfad>`.
 
 Der Guard laeuft auch:
 
@@ -873,7 +878,12 @@ Restic-/Docker-Systempfade, keine setuid/setgid-Binaries, `User=root` fuer den
 Restore-Smoke-Service und die dokumentierte persistente Wochenplanung. Der Guard
 liest keine Backup-Env-Inhalte, Secretwerte, Dumps, Logs, Antworten, Exporte oder
 Quelleninhalte und startet keine Backups, Restores, Docker, Imports, Regressionen
-oder DB-Abfragen.
+oder DB-Abfragen. Der root-noetige JSON-Hilfsmodus nutzt `/usr/bin/sudo`; Restic
+und Docker werden nur aus `/usr/bin/restic` oder `/usr/local/bin/restic` bzw.
+`/usr/bin/docker` oder `/usr/local/bin/docker` ausgewaehlt und metadata-only auf
+Symlink-Freiheit, regulaere Datei, `root:root`, Modus, Ausfuehrbarkeit und
+unerwartete Sonderbits geprueft. Die Summary zeigt `helper_binaries=<n>`,
+`restic_binary=<pfad>` und `docker_binary=<pfad>`.
 
 Der Guard laeuft auch:
 

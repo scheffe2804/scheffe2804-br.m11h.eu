@@ -324,9 +324,9 @@ Aktueller Guard-Stand laut read-only Status-/Summary-Pruefungen vom 2026-06-06:
 - Protocol-Integrity-Guard: `protocol_integrity_status=ok`.
 - Git-Remote-Readiness: `git_remote_readiness_status=ok branch=main tracking=1 dirty=0 remote_head_present=1 sensitive_tracked=0 git_user=chris`.
 - Backup-Scope-Guard: `backup_scope_status=ok checks=36 findings=0 snapshots=48 latest_snapshot=c94d3ec9 tags=2 paths=3 expected_paths=3 helper_binaries=4 restic_binary=/usr/bin/restic`.
-- Backup-Runtime-Policy-Guard: `backup_runtime_policy_status=ok checks=27 findings=0 backup_env_mode=600 backup_env_parent_mode=700 restic_mode=755 service_mode=644 service_user_root=1`.
+- Backup-Runtime-Policy-Guard: `backup_runtime_policy_status=ok checks=34 findings=0 backup_env_mode=600 backup_env_parent_mode=700 restic_mode=755 service_mode=644 service_user_root=1 helper_binaries=2 restic_binary=/usr/bin/restic`.
 - Restic-Repository-Check-Freshness: `restic_repository_check_status=ok checks=10 findings=0 last_check=2026-06-06T06:25:14Z age_h=27.8 snapshots=48 documented_success=1 max_age_h=720.0 lock_preflight=0`.
-- Restore-Runtime-Policy-Guard: `restore_runtime_policy_status=ok checks=67 findings=0 backup_env_mode=600 tmp_mode=1777 restic_mode=755 docker_mode=755 service_mode=644 timer_mode=644 service_user_root=1 timer_persistent=1`.
+- Restore-Runtime-Policy-Guard: `restore_runtime_policy_status=ok checks=74 findings=0 backup_env_mode=600 tmp_mode=1777 restic_mode=755 docker_mode=755 service_mode=644 timer_mode=644 service_user_root=1 timer_persistent=1 helper_binaries=3 restic_binary=/usr/bin/restic docker_binary=/usr/bin/docker`.
 - Import-Pipeline-Guard: `import_pipeline_status=ok checks=11 findings=0 m00h_latest_age_h=7.7 bag_latest_age_h=7.3 recent_checked_72h=26`.
 - Import-Source-Hardening: `import_source_hardening_status=ok`.
 - Data-Integrity-Source-Hardening: `data_integrity_source_hardening_status=ok checks=169 findings=0 answer_export_markers=35 audit_markers=25 db_schema_markers=28 forbidden_markers=75`.
@@ -1123,7 +1123,11 @@ root-only Backup-Env-Datei mit Modus `600`, root-only Elternverzeichnis mit Modu
 `700`, ein nicht setuid/setgid gesetztes Restic-Binary und eine installierte
 Backup-Service-Policy mit `User=root`, erwarteter `ExecStart` und erwartetem
 `WorkingDirectory`. Der Guard nutzt einen root-only JSON-Hilfsmodus fuer
-Metadaten, gibt aber keine Backup-Env-Inhalte, Secretwerte, Dumps, Logs,
+Metadaten ueber `/usr/bin/sudo`, waehlt Restic nur aus `/usr/bin/restic` oder
+`/usr/local/bin/restic` und prueft diese Helfer metadata-only auf Symlink-Freiheit,
+regulaere Datei, `root:root`, Modus, Ausfuehrbarkeit und unerwartete Sonderbits.
+Die Summary meldet `helper_binaries=2` und aktuell `restic_binary=/usr/bin/restic`.
+Er gibt aber keine Backup-Env-Inhalte, Secretwerte, Dumps, Logs,
 Antworttexte, Exporte oder Quelleninhalte aus und startet keine Backups,
 Restores, Docker, Imports, Regressionen oder DB-Abfragen. Er laeuft im normalen
 Statuscheck, im systemd-Healthcheck-Preflight und im Backup-Preflight.
@@ -1138,7 +1142,12 @@ kuratierte Restic-/Docker-Systempfade, keine setuid/setgid-Binaries, `/tmp` mit
 Sticky-Bit-Modus `1777`, eine installierte Restore-Smoke-Service-Policy mit
 `User=root`, erwarteter `ExecStart` und erwartetem `WorkingDirectory` sowie die
 dokumentierte persistente Wochenplanung des Timers. Der Guard nutzt einen
-root-only JSON-Hilfsmodus fuer Metadaten, gibt aber keine Backup-Env-Inhalte,
+root-only JSON-Hilfsmodus ueber `/usr/bin/sudo`, waehlt Restic/Docker nur aus
+`/usr/bin/restic`, `/usr/local/bin/restic`, `/usr/bin/docker` oder
+`/usr/local/bin/docker` und prueft diese Helfer metadata-only auf Symlink-Freiheit,
+regulaere Datei, `root:root`, Modus, Ausfuehrbarkeit und unerwartete Sonderbits.
+Die Summary meldet `helper_binaries=3`, aktuell `restic_binary=/usr/bin/restic`
+und `docker_binary=/usr/bin/docker`. Er gibt aber keine Backup-Env-Inhalte,
 Secretwerte, Dumps, Logs, Antworttexte, Exporte oder Quelleninhalte aus und
 startet keine Backups, Restores, Docker, Imports, Regressionen oder DB-Abfragen.
 Er laeuft im normalen Statuscheck, im systemd-Healthcheck-Preflight und im
