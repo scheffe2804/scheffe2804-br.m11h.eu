@@ -217,7 +217,10 @@ findet oder
 wenn der Shell-Syntax-Guard Syntaxfehler in Shell-Skripten unter `scripts/`
 findet oder
 wenn der Systemd-Source-Hardening-Guard unerwartete Service-/Timer-Quellenmarker
-oder fehlende Healthcheck-Preflights erkennt oder wenn der Status-Source-
+oder fehlende Healthcheck-Preflights erkennt oder wenn der Systemd-Unit-Guard
+fehlende, nicht synchronisierte, als Symlink eingebundene, irregulaere,
+installiert group-/world-writable oder projekt-/installiert world-writable
+Unit-Dateien meldet (`unit_policy_failures=0`) oder wenn der Status-Source-
 Hardening-Guard unerwartete Aenderungen am zentralen Status-Wrapper, seinen
 read-only Defaults, Opt-in-Pfaden oder Guard-Abschnitten erkennt oder wenn der
 Healthcheck-Source-Hardening-Guard unerwartete Aenderungen an App-Healthcheck-
@@ -340,6 +343,13 @@ Summary-Marker, ohne Regressionen, Docker oder DB-Abfragen auszufuehren.
 Die Healthcheck-Unit enthaelt fuer den leichten Restic-Repository-Check-Nachweis
 den Preflight
 `ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-restic-repository-check.py --summary`.
+Der Systemd-Unit-Guard prueft zusaetzlich metadata-only die Unit-Datei-Policy von
+Projekt- und installierten BR-Wissen-Units: keine Symlinks, regulaere Dateien,
+keine world-writable Projekt-/Installationsdateien und keine group-writable
+installierten Units; erwarteter Marker ist `unit_policy_failures=0`. Der Scope
+ist auf direkte BR-Wissen-Unit-Dateien aus der festen `br-wissen-*`-Liste
+begrenzt; normale systemd-Enablement-Symlinks unter `*.wants/` sind nicht Teil der
+Pruefung.
 Der Freshness-Source-Hardening-Guard prueft die Backup-/Restore-Freshness-
 Quellen auf erwartete metadata-only Log-/Dump-/Restic-/Restore-Smoke-/Summary-
 Marker, ohne Freshness-Checks, `sudo`, Restic, Docker oder DB-Abfragen

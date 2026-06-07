@@ -1417,12 +1417,17 @@ scripts/check-systemd-units.sh --summary
 ```
 
 Prueft, ob die zehn BR-Wissen-Service-/Timer-Dateien im Projekt mit
-`/etc/systemd/system/` synchron sind und ob die fuenf erwarteten Timer aktiv
-sind. Zusaetzlich prueft er, ob eine der fuenf erwarteten BR-Wissen-Service-
-Units im systemd-Zustand `failed` haengt. Abgeschlossene oneshot-Services im
-Zustand `inactive` sind dabei erwartbar und gelten nicht als Fehler. Der Guard
-laeuft im normalen Statuscheck, im systemd-Healthcheck-Preflight und im Backup-
-Preflight.
+`/etc/systemd/system/` synchron sind, ob die Unit-Dateien keine Symlinks oder
+irregulaeren Dateien sind, ob installierte Units nicht group-/world-writable sind,
+ob keine Projekt- oder installierte Unit world-writable ist
+(`unit_policy_failures=0`) und ob die fuenf erwarteten Timer aktiv sind.
+Geprueft werden nur die direkten BR-Wissen-Unit-Dateien aus der festen
+`br-wissen-*`-Liste; normale systemd-Enablement-Symlinks unter `*.wants/` sind
+nicht Teil dieses Guards.
+Zusaetzlich prueft er, ob eine der fuenf erwarteten BR-Wissen-Service-Units im
+systemd-Zustand `failed` haengt. Abgeschlossene oneshot-Services im Zustand
+`inactive` sind dabei erwartbar und gelten nicht als Fehler. Der Guard laeuft im
+normalen Statuscheck, im systemd-Healthcheck-Preflight und im Backup-Preflight.
 
 ### Container-Image-Inventar pruefen
 

@@ -148,6 +148,31 @@ Der Guard laeuft auch:
 - als `ExecStartPre` im systemd-Healthcheck,
 - als Preflight im Backup-Skript vor Dump/Restic.
 
+## Systemd-Unit-Guard pruefen
+
+```bash
+cd /home/chris/web/br.m11h.eu
+scripts/check-systemd-units.sh
+scripts/check-systemd-units.sh --summary
+```
+
+Der Guard ist read-only und prueft die zehn BR-Wissen-Service-/Timer-Dateien auf
+Synchronitaet zwischen Projektquelle und `/etc/systemd/system/`, die fuenf
+erwarteten Timer auf `active`, die fuenf erwarteten Services auf nicht-`failed`
+und metadata-only die Unit-Datei-Policy. Erwartet sind keine Symlinks, regulaere
+Unit-Dateien, keine world-writable Projekt-/Installationsdateien und keine
+group-writable installierten Units; der Summary-Marker dafuer ist
+`unit_policy_failures=0`. Abgeschlossene oneshot-Services im Zustand `inactive`
+sind erwartbar und kein Fehler. Der Pfad-Scope ist bewusst auf die direkten
+BR-Wissen-Unit-Dateien aus der festen `br-wissen-*`-Liste begrenzt; normale
+systemd-Enablement-Symlinks unter `*.wants/` werden nicht inspiziert.
+
+Der Guard laeuft auch:
+
+- im normalen Statuscheck unter `Systemd Timer`,
+- als `ExecStartPre` im systemd-Healthcheck,
+- als Preflight im Backup-Skript vor Dump/Restic.
+
 ## Status-Source-Hardening-Guard pruefen
 
 ```bash

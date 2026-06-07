@@ -48,7 +48,63 @@ services=(
 sync_failures=0
 timer_failures=0
 unit_missing=0
+unit_policy_failures=0
 failed_services=0
+checks=0
+
+check_unit_file_policy() {
+  local path="$1"
+  local label="$2"
+  local strict_mode="$3"
+  local mode owner group
+
+  # Scope note: this checks only the direct project unit source files and the
+  # direct /etc/systemd/system/<unit> files listed above. Normal systemd
+  # enablement links below *.wants/ are not part of this guard's path set.
+
+  checks=$((checks + 1))
+  if [[ -L "$path" ]]; then
+    unit_policy_failures=$((unit_policy_failures + 1))
+    if [[ "$summary" -eq 0 ]]; then
+      printf 'systemd_unit_policy=%s status=symlink\n' "$label"
+    fi
+    return
+  fi
+
+  checks=$((checks + 1))
+  if [[ ! -f "$path" ]]; then
+    unit_policy_failures=$((unit_policy_failures + 1))
+    if [[ "$summary" -eq 0 ]]; then
+      printf 'systemd_unit_policy=%s status=not_regular\n' "$label"
+    fi
+    return
+  fi
+
+  mode="$(stat -c '%a' "$path")"
+  owner="$(stat -c '%U' "$path")"
+  group="$(stat -c '%G' "$path")"
+
+  checks=$((checks + 1))
+  if [[ "$strict_mode" == "installed" && ( "$mode" =~ [2367][0-7]$ || "$mode" =~ [0-7][2367]$ ) ]]; then
+    unit_policy_failures=$((unit_policy_failures + 1))
+    if [[ "$summary" -eq 0 ]]; then
+      printf 'systemd_unit_policy=%s status=writable mode=%s owner=%s group=%s\n' "$label" "$mode" "$owner" "$group"
+    fi
+    return
+  fi
+
+  if [[ "$mode" =~ [0-7][0-7][2367]$ ]]; then
+    unit_policy_failures=$((unit_policy_failures + 1))
+    if [[ "$summary" -eq 0 ]]; then
+      printf 'systemd_unit_policy=%s status=world_writable mode=%s owner=%s group=%s\n' "$label" "$mode" "$owner" "$group"
+    fi
+    return
+  fi
+
+  if [[ "$summary" -eq 0 ]]; then
+    printf 'systemd_unit_policy=%s status=ok mode=%s owner=%s group=%s\n' "$label" "$mode" "$owner" "$group"
+  fi
+}
 
 if [[ "$summary" -eq 0 ]]; then
   echo "# Systemd Unit Guard"
@@ -58,6 +114,7 @@ for unit in "${units[@]}"; do
   src="${ROOT}/systemd/${unit}"
   dst="/etc/systemd/system/${unit}"
   status="ok"
+  checks=$((checks + 1))
   if [[ ! -f "$src" || ! -f "$dst" ]]; then
     status="missing"
     unit_missing=$((unit_missing + 1))
@@ -65,12 +122,19 @@ for unit in "${units[@]}"; do
     status="diff"
     sync_failures=$((sync_failures + 1))
   fi
+  if [[ -e "$src" ]]; then
+    check_unit_file_policy "$src" "project:${unit}" "project"
+  fi
+  if [[ -e "$dst" ]]; then
+    check_unit_file_policy "$dst" "installed:${unit}" "installed"
+  fi
   if [[ "$summary" -eq 0 ]]; then
     printf 'systemd_unit_sync=%s status=%s\n' "$unit" "$status"
   fi
 done
 
 for timer in "${timers[@]}"; do
+  checks=$((checks + 1))
   timer_status="$(systemctl is-active "$timer" 2>/dev/null || true)"
   if [[ "$timer_status" != "active" ]]; then
     timer_failures=$((timer_failures + 1))
@@ -81,6 +145,7 @@ for timer in "${timers[@]}"; do
 done
 
 for service in "${services[@]}"; do
+  checks=$((checks + 1))
   service_state="$(systemctl is-failed "$service" 2>/dev/null || true)"
   if [[ "$service_state" == "failed" ]]; then
     failed_services=$((failed_services + 1))
@@ -90,13 +155,13 @@ for service in "${services[@]}"; do
   fi
 done
 
-violations=$((sync_failures + timer_failures + unit_missing + failed_services))
+violations=$((sync_failures + timer_failures + unit_missing + unit_policy_failures + failed_services))
 if [[ "$violations" -eq 0 ]]; then
-  printf 'systemd_unit_guard_status=ok units=%d timers=%d services=%d sync_failures=0 missing_units=0 inactive_timers=0 failed_services=0\n' \
-    "${#units[@]}" "${#timers[@]}" "${#services[@]}"
+  printf 'systemd_unit_guard_status=ok checks=%d units=%d timers=%d services=%d sync_failures=0 missing_units=0 unit_policy_failures=0 inactive_timers=0 failed_services=0\n' \
+    "$checks" "${#units[@]}" "${#timers[@]}" "${#services[@]}"
   exit 0
 fi
 
-printf 'systemd_unit_guard_status=fail units=%d timers=%d services=%d sync_failures=%d missing_units=%d inactive_timers=%d failed_services=%d\n' \
-  "${#units[@]}" "${#timers[@]}" "${#services[@]}" "$sync_failures" "$unit_missing" "$timer_failures" "$failed_services"
+printf 'systemd_unit_guard_status=fail checks=%d units=%d timers=%d services=%d sync_failures=%d missing_units=%d unit_policy_failures=%d inactive_timers=%d failed_services=%d\n' \
+  "$checks" "${#units[@]}" "${#timers[@]}" "${#services[@]}" "$sync_failures" "$unit_missing" "$unit_policy_failures" "$timer_failures" "$failed_services"
 exit 1
