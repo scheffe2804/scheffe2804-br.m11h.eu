@@ -178,6 +178,10 @@ echo "## Healthcheck-Source-Hardening"
 scripts/check-healthcheck-source-hardening.py --summary
 echo
 
+echo "## Operational-Wrapper-Source-Hardening"
+scripts/check-operational-wrapper-source-hardening.py --summary
+echo
+
 echo "## Guard-Coverage-Guard"
 scripts/check-guard-coverage.py --summary
 echo

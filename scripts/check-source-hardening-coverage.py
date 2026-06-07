@@ -132,6 +132,7 @@ SOURCE_HARDENING_GUARDS = sorted(
         "check-import-source-hardening.py",
         "check-meta-source-hardening.py",
         "check-network-source-hardening.py",
+        "check-operational-wrapper-source-hardening.py",
         "check-regression-source-hardening.py",
         "check-restore-source-hardening.py",
         "check-source-hardening-coverage.py",
@@ -249,7 +250,7 @@ def main() -> int:
         checks += 2
         if guard not in actual_scripts:
             findings.append("source_guard_missing=%s" % guard)
-        if guard not in grouped_source_guards and guard not in {"check-backup-source-hardening.py", "check-compose-source-hardening.py", "check-healthcheck-source-hardening.py", "check-restore-source-hardening.py", "check-status-source-hardening.py", "check-storage-source-hardening.py", "check-systemd-source-hardening.py"}:
+        if guard not in grouped_source_guards and guard not in {"check-backup-source-hardening.py", "check-compose-source-hardening.py", "check-healthcheck-source-hardening.py", "check-operational-wrapper-source-hardening.py", "check-restore-source-hardening.py", "check-status-source-hardening.py", "check-storage-source-hardening.py", "check-systemd-source-hardening.py"}:
             findings.append("source_guard_not_in_coverage_groups=%s" % guard)
 
     accounted = covered_targets | set(SOURCE_HARDENING_GUARDS) | set(EXPLICIT_EXCEPTIONS)

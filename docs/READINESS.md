@@ -1,6 +1,6 @@
 # BR-Wissen Readiness-Dossier
 
-Stand: 2026-06-07T12:34:15Z
+Stand: 2026-06-07T14:36:33Z
 
 Dieses Dossier fasst den aktuellen Betriebs-, Sicherheits-, Backup-, Restore- und
 Regressionstand fuer `br.m11h.eu` zusammen. Es enthaelt bewusst keine Secretwerte,
@@ -159,8 +159,13 @@ Aktive Schutzschichten:
     zentralen Status-Wrappers inklusive read-only Defaults, expliziter Opt-ins,
     Guard-Abschnitte und Summary-Aufrufe.
 38. Healthcheck-Source-Hardening-Guard fuer die read-only Quellenpruefung des
-    App-Healthchecks und dessen Docker-Wrapper inklusive Summary-, Failure-,
-    DB-/Datei-Integritaets- und Wrapper-Markern.
+     App-Healthchecks und dessen Docker-Wrapper inklusive Summary-, Failure-,
+     DB-/Datei-Integritaets- und Wrapper-Markern.
+38a. Operational-Wrapper-Source-Hardening-Guard fuer die read-only
+     Quellenpruefung operativer Wrapper fuer Backup, Restore-Smoke, Importe,
+     Regressionen, Exporte, Repair, Cloudflare-Pattern-Hilfe und OCR auf
+     Fail-Fast-Verhalten, kuratierte Helferpfade, explizite Laufzeitgrenzen und
+     Keine-Secrets-Marker.
 39. Python-Syntax-Guard fuer cache-freie AST-Pruefung der Python-Dateien in
     `app/`, `scripts/` und `worker/`.
 40. Shell-Syntax-Guard fuer `bash -n`-Pruefung der Shell-Skripte in `scripts/`.
@@ -304,6 +309,7 @@ Aktueller Guard-Stand laut read-only Status-/Summary-Pruefungen vom 2026-06-06:
 - Systemd-Source-Hardening: `systemd_source_hardening_status=ok`.
 - Status-Source-Hardening: `status_source_hardening_status=ok`.
 - Healthcheck-Source-Hardening: `healthcheck_source_hardening_status=ok`.
+- Operational-Wrapper-Source-Hardening: `operational_wrapper_source_hardening_status=ok`.
 - Core-Source-Hardening: `core_source_hardening_status=ok`.
 - Container-Source-Hardening: `container_source_hardening_status=ok`.
 - Network-Source-Hardening: `network_source_hardening_status=ok`.
@@ -1106,6 +1112,23 @@ wiederhergestellte Dateien oder Quelleninhalte zu lesen und ohne Restore, Restic
 Docker, `sudo` oder `systemctl` aufzurufen. Der Guard laeuft im normalen
 Statuscheck, im systemd-Healthcheck-Preflight und im Backup-Preflight.
 
+Der Operational-Wrapper-Source-Hardening-Guard
+`scripts/check-operational-wrapper-source-hardening.py` ist read-only und
+validiert operative Wrapper-Quellen auf erwartete Fail-Fast-, absolute
+Helper-Pfad-, Laufzeitgrenzen- und Keine-Secrets-Marker. Abgedeckt sind
+`scripts/backup-br-wissen.sh`, `scripts/run-restore-smoke-drill.sh`,
+`scripts/restore-smoke-br-wissen.sh`, `scripts/import-m00h-betriebsrat.sh`,
+`scripts/import-bag-feed-docker.sh`, `scripts/run-regressions-docker.sh`,
+`scripts/export-answer-docker.sh`, `scripts/repair-short-text-sources-docker.sh`,
+`scripts/check-cloudflare-staging-pattern.sh` und `scripts/ocr-single-pdf.sh`.
+Er liest keine Backup-Env-Inhalte, Secretwerte, Dumps, Logs, Antworttexte,
+Exporte oder Quelleninhalte und startet keine Backups, Restores, Docker, rsync,
+OCR, Imports, Regressionen, Repairs, Exporte, Restic-, sudo- oder
+systemd-Aktionen. Aktueller Stand:
+`operational_wrapper_source_hardening_status=ok checks=128 findings=0 wrappers=10 required_literals=106 forbidden_markers=10`.
+Der Guard laeuft im normalen Statuscheck, im systemd-Healthcheck-Preflight und im
+Backup-Preflight.
+
 Der Backup-Scope-Guard `scripts/check-backup-scope.py` ist read-only und prueft
 ausschliesslich Restic-Snapshot-Metadaten des neuesten BR-Wissen-Backups. Erwartet
 werden der Zielhost `m11h`, die kuratierten BR-Wissen-Tags und genau der
@@ -1206,6 +1229,7 @@ Verschluesseltes Restic-Backup laut Backup-Freshness-Guard beim Doku-Abgleich vo
 - Letzter Systemd-Source-Hardening-Preflight: `systemd_source_hardening_status=ok`.
 - Letzter Backup-Source-Hardening-Preflight: `backup_source_hardening_status=ok`.
 - Letzter Restore-Source-Hardening-Preflight: `restore_source_hardening_status=ok`.
+- Letzter Operational-Wrapper-Source-Hardening-Preflight: `operational_wrapper_source_hardening_status=ok checks=128 findings=0 wrappers=10 required_literals=106 forbidden_markers=10`.
 - Letzter Python-Syntax-Preflight: `python_syntax_status=ok`.
 - Letzter Shell-Syntax-Preflight: `shell_syntax_status=ok`.
 - Letzter Guard-Coverage-Preflight: `guard_coverage_status=ok`.

@@ -54,6 +54,7 @@ ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-systemd-units.sh --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-systemd-source-hardening.py --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-status-source-hardening.py --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-healthcheck-source-hardening.py --summary
+ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-operational-wrapper-source-hardening.py --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-python-syntax.sh --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-shell-syntax.sh --summary
 ExecStartPre=/home/chris/web/br.m11h.eu/scripts/check-guard-coverage.py --summary
@@ -228,7 +229,10 @@ Hardening-Guard unerwartete Aenderungen am zentralen Status-Wrapper, seinen
 read-only Defaults, Opt-in-Pfaden oder Guard-Abschnitten erkennt oder wenn der
 Healthcheck-Source-Hardening-Guard unerwartete Aenderungen an App-Healthcheck-
 Quelle, Summary-/Failure-Markern, read-only DB-/Datei-Pruefungen oder Docker-
-Wrapper erkennt oder
+Wrapper erkennt oder wenn der Operational-Wrapper-Source-Hardening-Guard
+unerwartete Aenderungen an operativen Backup-, Restore-Smoke-, Import-,
+Regression-, Export-, Repair-, Cloudflare-Pattern- oder OCR-Wrapperquellen,
+absoluten Helper-Pfaden, Laufzeitgrenzen oder Keine-Secrets-Markern erkennt oder
 wenn der Access-Runtime-Source-Hardening-Guard unerwartete Aenderungen an den
 runtime- und zugriffsnahen Guardquellen fuer Header-, Cookie-, TLS- oder
 Auth-/CSRF-Negativproben erkennt oder

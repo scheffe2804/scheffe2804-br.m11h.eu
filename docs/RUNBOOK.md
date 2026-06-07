@@ -234,6 +234,29 @@ Der Guard laeuft auch:
 - als `ExecStartPre` im systemd-Healthcheck,
 - als Preflight im Backup-Skript vor Dump/Restic.
 
+## Operational-Wrapper-Source-Hardening-Guard pruefen
+
+```bash
+cd /home/chris/web/br.m11h.eu
+scripts/check-operational-wrapper-source-hardening.py
+scripts/check-operational-wrapper-source-hardening.py --summary
+```
+
+Der Guard ist read-only und prueft ausschliesslich operative Wrapper-Quellen fuer
+Backup, Restore-Smoke, m00h-/BAG-Import, Regressionen, Antwort-Export, Repair,
+Cloudflare-Pattern-Hilfe und OCR. Geprueft werden erwartete Marker fuer
+`set -euo pipefail`, kuratierte absolute Helper-Pfade, explizite Opt-in- bzw.
+Laufzeitgrenzen, restriktive Log-/Dateirechte und Keine-Secrets-Hinweise. Er
+liest keine Backup-Env-Inhalte, Secrets, Dumps, Logs, Antworten, Exporte oder
+Quelleninhalte und startet keine Backups, Restores, Docker, rsync, OCR, Imports,
+Regressionen, Repairs, Exporte, Restic-, sudo- oder systemd-Aktionen.
+
+Der Guard laeuft auch:
+
+- im normalen Statuscheck unter `Operational-Wrapper-Source-Hardening`,
+- als `ExecStartPre` im systemd-Healthcheck,
+- als Preflight im Backup-Skript vor Dump/Restic.
+
 ## Access-Runtime-Source-Hardening-Guard pruefen
 
 ```bash

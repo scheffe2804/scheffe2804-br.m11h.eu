@@ -102,6 +102,7 @@ EXPECTED_PREFLIGHTS = [
     ("systemd_source_hardening", "check-systemd-source-hardening.py", "--summary"),
     ("status_source_hardening", "check-status-source-hardening.py", "--summary"),
     ("healthcheck_source_hardening", "check-healthcheck-source-hardening.py", "--summary"),
+    ("operational_wrapper_source_hardening", "check-operational-wrapper-source-hardening.py", "--summary"),
     ("python_syntax", "check-python-syntax.sh", "--summary"),
     ("shell_syntax", "check-shell-syntax.sh", "--summary"),
     ("guard_coverage", "check-guard-coverage.py", "--summary"),

@@ -227,6 +227,7 @@ SOURCE_HARDENING_COVERAGE_MARKERS: list[tuple[str, str]] = [
     ("data_group", "data_integrity_source_hardening"),
     ("meta_group", "meta_source_hardening"),
     ("source_guards", "SOURCE_HARDENING_GUARDS = sorted"),
+    ("operational_wrapper_source_guard", "check-operational-wrapper-source-hardening.py"),
     ("exceptions", "EXPLICIT_EXCEPTIONS = {"),
     ("cloudflare_exception", "check-cloudflare-staging-pattern.sh"),
     ("actual_scripts", "actual_scripts = sorted(path.name for path in SCRIPTS.glob(\"check-*\")"),

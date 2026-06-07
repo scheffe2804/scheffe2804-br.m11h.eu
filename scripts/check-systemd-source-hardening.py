@@ -61,6 +61,7 @@ SERVICE_EXPECTATIONS: dict[str, dict[str, str | list[str]]] = {
             "/home/chris/web/br.m11h.eu/scripts/check-systemd-source-hardening.py --summary",
             "/home/chris/web/br.m11h.eu/scripts/check-status-source-hardening.py --summary",
             "/home/chris/web/br.m11h.eu/scripts/check-healthcheck-source-hardening.py --summary",
+            "/home/chris/web/br.m11h.eu/scripts/check-operational-wrapper-source-hardening.py --summary",
             "/home/chris/web/br.m11h.eu/scripts/check-python-syntax.sh --summary",
             "/home/chris/web/br.m11h.eu/scripts/check-shell-syntax.sh --summary",
             "/home/chris/web/br.m11h.eu/scripts/check-guard-coverage.py --summary",

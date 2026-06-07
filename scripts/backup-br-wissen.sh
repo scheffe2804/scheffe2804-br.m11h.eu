@@ -121,6 +121,7 @@ umask 027
   run_preflight systemd_source_hardening "${APP_DIR}/scripts/check-systemd-source-hardening.py" --summary
   run_preflight status_source_hardening "${APP_DIR}/scripts/check-status-source-hardening.py" --summary
   run_preflight healthcheck_source_hardening "${APP_DIR}/scripts/check-healthcheck-source-hardening.py" --summary
+  run_preflight operational_wrapper_source_hardening "${APP_DIR}/scripts/check-operational-wrapper-source-hardening.py" --summary
   run_preflight python_syntax "${APP_DIR}/scripts/check-python-syntax.sh" --summary
   run_preflight shell_syntax "${APP_DIR}/scripts/check-shell-syntax.sh" --summary
   run_preflight guard_coverage "${APP_DIR}/scripts/check-guard-coverage.py" --summary

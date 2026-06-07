@@ -284,6 +284,22 @@ keinen Healthcheck, kein Docker, keine DB-Abfragen, Imports, Backups, Restores
 oder Regressionen auf. Der Guard laeuft im normalen Statuscheck, im
 systemd-Healthcheck-Preflight und im Backup-Preflight vor Dump/Restic.
 
+### Operational-Wrapper-Source-Hardening-Guard pruefen
+
+```bash
+scripts/check-operational-wrapper-source-hardening.py
+scripts/check-operational-wrapper-source-hardening.py --summary
+```
+
+Der Guard ist read-only und validiert operative Wrapper-Quellen fuer Backup,
+Restore-Smoke, Importe, Regressionen, Exporte, Repair, Cloudflare-Pattern-Hilfe
+und OCR auf erwartete Fail-Fast-, absolute Helper-Pfad-, Laufzeitgrenzen- und
+Keine-Secrets-Marker. Er liest keine Backup-Env-Inhalte, Secrets, Dumps, Logs,
+Antworttexte, Exporte oder Quelleninhalte und startet keine Backups, Restores,
+Docker, rsync, OCR, Imports, Regressionen, Repairs, Exporte, Restic-, sudo- oder
+systemd-Aktionen. Der Guard laeuft im normalen Statuscheck, im systemd-
+Healthcheck-Preflight und im Backup-Preflight vor Dump/Restic.
+
 ### Projektbaum auf lokale Artefakte/Secrets pruefen
 
 ```bash
