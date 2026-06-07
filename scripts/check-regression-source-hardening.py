@@ -89,8 +89,9 @@ RUNNER_FAILURE_MARKERS = [
 WRAPPER_MARKERS = [
     "set -euo pipefail",
     "ROOT=\"/home/chris/web/br.m11h.eu\"",
+    "DOCKER_BIN=\"/usr/bin/docker\"",
     "cd \"$ROOT\"",
-    "docker compose exec -T app python - < scripts/run-regressions.py",
+    "\"$DOCKER_BIN\" compose exec -T app python - < scripts/run-regressions.py",
 ]
 
 
@@ -216,7 +217,7 @@ def main() -> int:
     if runner_text.find("answer_validation") > runner_text.find("check_export"):
         findings.append("runner_validation_after_export")
     checks += 1
-    if wrapper_text.find("cd \"$ROOT\"") > wrapper_text.find("docker compose exec -T app python"):
+    if wrapper_text.find("cd \"$ROOT\"") > wrapper_text.find("compose exec -T app python"):
         findings.append("wrapper_docker_before_cd")
     checks += 1
     if freshness_text.find("def guarded_file_size") > freshness_text.find("manifest_size < 100"):

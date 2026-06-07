@@ -12,7 +12,26 @@ SNAPSHOT="latest"
 RUN_DB_RESTORE=0
 KEEP_TARGET=0
 TARGET=""
-STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
+DATE_BIN="/usr/bin/date"
+DOCKER_BIN="/usr/bin/docker"
+GREP_BIN="/usr/bin/grep"
+RM_BIN="/usr/bin/rm"
+SUDO_BIN="/usr/bin/sudo"
+TEST_BIN="/usr/bin/test"
+BASH_BIN="/usr/bin/bash"
+RESTIC_BIN="/usr/bin/restic"
+PYTHON_BIN="/usr/bin/python3.13"
+FIND_BIN="/usr/bin/find"
+WC_BIN="/usr/bin/wc"
+TR_BIN="/usr/bin/tr"
+STAT_BIN="/usr/bin/stat"
+SORT_BIN="/usr/bin/sort"
+AWK_BIN="/usr/bin/awk"
+BASENAME_BIN="/usr/bin/basename"
+SLEEP_BIN="/usr/bin/sleep"
+SEQ_BIN="/usr/bin/seq"
+PRINTF_BIN="/usr/bin/printf"
+STAMP="$($DATE_BIN -u +%Y%m%dT%H%M%SZ)"
 PGVECTOR_IMAGE="pgvector/pgvector:pg16@sha256:00ba258a66dac104fd5171074a0084462a64a1369d8513f3d0a634e2f24d15bc"
 DB_CONTAINER="br-wissen-restore-smoke-db-${STAMP}"
 DB_VOLUME="br_wissen_restore_smoke_pgdata_${STAMP}"
@@ -77,28 +96,28 @@ case "$TARGET" in
 esac
 
 cleanup() {
-  if docker ps -a --format '{{.Names}}' | grep -qx "$DB_CONTAINER"; then
-    docker rm -f "$DB_CONTAINER" >/dev/null 2>&1 || true
+  if "$DOCKER_BIN" ps -a --format '{{.Names}}' | "$GREP_BIN" -qx "$DB_CONTAINER"; then
+    "$DOCKER_BIN" rm -f "$DB_CONTAINER" >/dev/null 2>&1 || true
   fi
-  if docker volume inspect "$DB_VOLUME" >/dev/null 2>&1; then
-    docker volume rm "$DB_VOLUME" >/dev/null 2>&1 || true
+  if "$DOCKER_BIN" volume inspect "$DB_VOLUME" >/dev/null 2>&1; then
+    "$DOCKER_BIN" volume rm "$DB_VOLUME" >/dev/null 2>&1 || true
   fi
-  rm -f -- "$DB_LOG"
+  "$RM_BIN" -f -- "$DB_LOG"
   if [[ "$KEEP_TARGET" -eq 0 ]]; then
     case "$TARGET" in
-      /tmp/br-wissen-restore-*) sudo rm -rf -- "$TARGET" ;;
+      /tmp/br-wissen-restore-*) "$SUDO_BIN" "$RM_BIN" -rf -- "$TARGET" ;;
     esac
   fi
 }
 trap cleanup EXIT
 
-if ! sudo test -f "$BACKUP_ENV"; then
+if ! "$SUDO_BIN" "$TEST_BIN" -f "$BACKUP_ENV"; then
   echo "restore_status=missing_backup_env"
   echo "backup_env=$BACKUP_ENV"
   exit 1
 fi
 
-if ! command -v restic >/dev/null 2>&1; then
+if ! [[ -x "$RESTIC_BIN" ]]; then
   echo "restore_status=missing_restic"
   exit 1
 fi
@@ -122,8 +141,8 @@ echo "restore_target=$TARGET"
 echo "db_restore_requested=$RUN_DB_RESTORE"
 echo "restore_sql_ready_wait=$SQL_READY_WAIT"
 
-snapshot_json="$(sudo bash -c 'set -euo pipefail; set -a; source "$1"; set +a; restic snapshots "$2" --host m11h --tag br-wissen --json' _ "$BACKUP_ENV" "$SNAPSHOT")"
-resolved_snapshot="$(RESTORE_SNAPSHOT_JSON="$snapshot_json" python3 - <<'PY'
+snapshot_json="$($SUDO_BIN "$BASH_BIN" -c 'set -euo pipefail; set -a; source "$1"; set +a; "$3" snapshots "$2" --host m11h --tag br-wissen --json' _ "$BACKUP_ENV" "$SNAPSHOT" "$RESTIC_BIN")"
+resolved_snapshot="$(RESTORE_SNAPSHOT_JSON="$snapshot_json" "$PYTHON_BIN" - <<'PY'
 import json
 import os
 from datetime import datetime, timezone
@@ -150,7 +169,7 @@ PY
 )"
 echo "restore_resolved_snapshot=$resolved_snapshot"
 
-sudo bash -c 'set -euo pipefail; set -a; source "$1"; set +a; restic restore "$2" --host m11h --tag br-wissen --target "$3"' _ "$BACKUP_ENV" "$SNAPSHOT" "$TARGET" >/dev/null
+"$SUDO_BIN" "$BASH_BIN" -c 'set -euo pipefail; set -a; source "$1"; set +a; "$4" restore "$2" --host m11h --tag br-wissen --target "$3"' _ "$BACKUP_ENV" "$SNAPSHOT" "$TARGET" "$RESTIC_BIN" >/dev/null
 
 APP_RESTORE="$TARGET/home/chris/web/br.m11h.eu"
 PROTOCOL_RESTORE="$TARGET/home/chris/web/diverses/betriebsrat.md"
@@ -158,9 +177,9 @@ DATA_RESTORE="$TARGET/srv/br-wissensdatenbank"
 EXPORT_RESTORE="$DATA_RESTORE/exports"
 BACKUP_RESTORE="$DATA_RESTORE/backups"
 
-echo "restore_app_exists=$(sudo test -d "$APP_RESTORE" && echo yes || echo no)"
-echo "restore_data_exists=$(sudo test -d "$DATA_RESTORE" && echo yes || echo no)"
-restore_file_count="$(sudo find "$TARGET" -type f | wc -l | tr -d ' ')"
+echo "restore_app_exists=$("$SUDO_BIN" "$TEST_BIN" -d "$APP_RESTORE" && echo yes || echo no)"
+echo "restore_data_exists=$("$SUDO_BIN" "$TEST_BIN" -d "$DATA_RESTORE" && echo yes || echo no)"
+restore_file_count="$("$SUDO_BIN" "$FIND_BIN" "$TARGET" -type f | "$WC_BIN" -l | "$TR_BIN" -d ' ')"
 echo "restore_file_count=$restore_file_count"
 
 required_files=(
@@ -177,19 +196,19 @@ required_files=(
 )
 missing_required=0
 for path in "${required_files[@]}"; do
-  if ! sudo test -f "$path"; then
+  if ! "$SUDO_BIN" "$TEST_BIN" -f "$path"; then
     missing_required=$((missing_required + 1))
   fi
 done
 
-artifact_findings="$(sudo find "$APP_RESTORE" \( -name '*.pyc' -o -name '*.log' -o -name '.env' -o -name '*.env' -o -name '__pycache__' -o -iname '*credential*' -o -iname '*token*' -o -path '*/cloudflared/*.json' \) -print 2>/dev/null | wc -l | tr -d ' ')"
+artifact_findings="$("$SUDO_BIN" "$FIND_BIN" "$APP_RESTORE" \( -name '*.pyc' -o -name '*.log' -o -name '.env' -o -name '*.env' -o -name '__pycache__' -o -iname '*credential*' -o -iname '*token*' -o -path '*/cloudflared/*.json' \) -print 2>/dev/null | "$WC_BIN" -l | "$TR_BIN" -d ' ')"
 echo "restore_artifact_findings=$artifact_findings"
 
 marker_failures=0
-if sudo test -f "$PROTOCOL_RESTORE"; then
+if "$SUDO_BIN" "$TEST_BIN" -f "$PROTOCOL_RESTORE"; then
   echo "restore_protocol_exists=yes"
-  echo "restore_protocol_size=$(sudo stat -c '%s' "$PROTOCOL_RESTORE")"
-  if sudo grep -aFq '# betriebsrat' "$PROTOCOL_RESTORE" && sudo grep -aFq 'BR-Wissen' "$PROTOCOL_RESTORE"; then
+  echo "restore_protocol_size=$("$SUDO_BIN" "$STAT_BIN" -c '%s' "$PROTOCOL_RESTORE")"
+  if "$SUDO_BIN" "$GREP_BIN" -aFq '# betriebsrat' "$PROTOCOL_RESTORE" && "$SUDO_BIN" "$GREP_BIN" -aFq 'BR-Wissen' "$PROTOCOL_RESTORE"; then
     echo "restore_protocol_markers=yes"
   else
     echo "restore_protocol_markers=no"
@@ -203,9 +222,9 @@ else
 fi
 echo "restore_required_missing=$missing_required"
 
-if sudo test -d "$EXPORT_RESTORE"; then
-  export_dirs="$(sudo find "$EXPORT_RESTORE" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')"
-  manifest_count="$(sudo find "$EXPORT_RESTORE" -mindepth 2 -maxdepth 2 -type f -name manifest.json | wc -l | tr -d ' ')"
+if "$SUDO_BIN" "$TEST_BIN" -d "$EXPORT_RESTORE"; then
+  export_dirs="$("$SUDO_BIN" "$FIND_BIN" "$EXPORT_RESTORE" -mindepth 1 -maxdepth 1 -type d | "$WC_BIN" -l | "$TR_BIN" -d ' ')"
+  manifest_count="$("$SUDO_BIN" "$FIND_BIN" "$EXPORT_RESTORE" -mindepth 2 -maxdepth 2 -type f -name manifest.json | "$WC_BIN" -l | "$TR_BIN" -d ' ')"
 else
   export_dirs=0
   manifest_count=0
@@ -214,8 +233,8 @@ echo "restore_export_dirs=$export_dirs"
 echo "restore_manifest_json=$manifest_count"
 
 latest_dump=""
-if sudo test -d "$BACKUP_RESTORE"; then
-  latest_dump="$(sudo find "$BACKUP_RESTORE" -maxdepth 1 -type f -name 'postgres-*.sql' -printf '%T@ %p\n' | sort -rn | awk 'NR==1 {sub(/^[^ ]+ /, ""); print}')"
+if "$SUDO_BIN" "$TEST_BIN" -d "$BACKUP_RESTORE"; then
+  latest_dump="$("$SUDO_BIN" "$FIND_BIN" "$BACKUP_RESTORE" -maxdepth 1 -type f -name 'postgres-*.sql' -printf '%T@ %p\n' | "$SORT_BIN" -rn | "$AWK_BIN" 'NR==1 {sub(/^[^ ]+ /, ""); print}')"
 fi
 
 if [[ -z "$latest_dump" ]]; then
@@ -223,8 +242,8 @@ if [[ -z "$latest_dump" ]]; then
   exit 1
 fi
 
-dump_name="$(basename "$latest_dump")"
-dump_size="$(sudo stat -c '%s' "$latest_dump")"
+dump_name="$($BASENAME_BIN "$latest_dump")"
+dump_size="$("$SUDO_BIN" "$STAT_BIN" -c '%s' "$latest_dump")"
 echo "restore_latest_dump=$dump_name"
 echo "restore_latest_dump_size=$dump_size"
 
@@ -236,8 +255,8 @@ for marker in \
   "public.answers" \
   "public.answer_statements" \
   "public.answer_citations"; do
-  label="$(printf '%s' "$marker" | tr ' .' '__')"
-  if sudo grep -aFq "$marker" "$latest_dump"; then
+  label="$($PRINTF_BIN '%s' "$marker" | "$TR_BIN" ' .' '__')"
+  if "$SUDO_BIN" "$GREP_BIN" -aFq "$marker" "$latest_dump"; then
     echo "dump_marker_${label}=yes"
   else
     echo "dump_marker_${label}=no"
@@ -245,47 +264,47 @@ for marker in \
   fi
 done
 
-atomic_refs="$(sudo grep -aF 'create_cited_answer_record' "$APP_RESTORE/app/main.py" | wc -l | tr -d ' ')"
-guard_refs="$(sudo grep -aF 'NOT EXISTS' "$APP_RESTORE/scripts/check-answer-export-safety.py" | wc -l | tr -d ' ')"
-db_schema_refs="$(sudo grep -aF 'check-db-schema.py' "$APP_RESTORE/scripts/status-br-wissen.sh" "$APP_RESTORE/scripts/backup-br-wissen.sh" "$APP_RESTORE/systemd/br-wissen-healthcheck.service" | wc -l | tr -d ' ')"
+atomic_refs="$("$SUDO_BIN" "$GREP_BIN" -aF 'create_cited_answer_record' "$APP_RESTORE/app/main.py" | "$WC_BIN" -l | "$TR_BIN" -d ' ')"
+guard_refs="$("$SUDO_BIN" "$GREP_BIN" -aF 'NOT EXISTS' "$APP_RESTORE/scripts/check-answer-export-safety.py" | "$WC_BIN" -l | "$TR_BIN" -d ' ')"
+db_schema_refs="$("$SUDO_BIN" "$GREP_BIN" -aF 'check-db-schema.py' "$APP_RESTORE/scripts/status-br-wissen.sh" "$APP_RESTORE/scripts/backup-br-wissen.sh" "$APP_RESTORE/systemd/br-wissen-healthcheck.service" | "$WC_BIN" -l | "$TR_BIN" -d ' ')"
 echo "restore_atomic_helper_refs=$atomic_refs"
 echo "restore_guard_not_exists_refs=$guard_refs"
 echo "restore_db_schema_refs=$db_schema_refs"
 
 if [[ "$RUN_DB_RESTORE" -eq 1 ]]; then
-  docker volume create "$DB_VOLUME" >/dev/null
-  docker run -d --name "$DB_CONTAINER" --network none \
+  "$DOCKER_BIN" volume create "$DB_VOLUME" >/dev/null
+  "$DOCKER_BIN" run -d --name "$DB_CONTAINER" --network none \
     -e POSTGRES_USER=br_app \
     -e POSTGRES_PASSWORD=restore_test_password \
     -e POSTGRES_DB=br_wissen_restore \
     -v "$DB_VOLUME:/var/lib/postgresql/data" \
     "$PGVECTOR_IMAGE" >/dev/null
   ready=0
-  for _ in $(seq 1 30); do
-    if docker exec "$DB_CONTAINER" pg_isready -U br_app -d br_wissen_restore >/dev/null 2>&1; then
+  for _ in $("$SEQ_BIN" 1 30); do
+    if "$DOCKER_BIN" exec "$DB_CONTAINER" pg_isready -U br_app -d br_wissen_restore >/dev/null 2>&1; then
       ready=1
       break
     fi
-    sleep 1
+    "$SLEEP_BIN" 1
   done
   if [[ "$ready" -ne 1 ]]; then
     echo "db_restore_status=db_not_ready"
     exit 1
   fi
   sql_ready=0
-  for _ in $(seq 1 "$SQL_READY_WAIT"); do
-    if docker exec "$DB_CONTAINER" psql -U br_app -d br_wissen_restore -Atqc 'SELECT 1' >/dev/null 2>&1; then
+  for _ in $("$SEQ_BIN" 1 "$SQL_READY_WAIT"); do
+    if "$DOCKER_BIN" exec "$DB_CONTAINER" psql -U br_app -d br_wissen_restore -Atqc 'SELECT 1' >/dev/null 2>&1; then
       sql_ready=1
       break
     fi
-    sleep 1
+    "$SLEEP_BIN" 1
   done
   if [[ "$sql_ready" -ne 1 ]]; then
     echo "db_restore_status=db_sql_not_ready"
     exit 1
   fi
-  sudo bash -c 'docker exec -i "$1" psql -v ON_ERROR_STOP=1 -U br_app -d br_wissen_restore < "$2"' _ "$DB_CONTAINER" "$latest_dump" >"$DB_LOG" 2>&1
-  docker exec "$DB_CONTAINER" psql -U br_app -d br_wissen_restore -Atc \
+  "$SUDO_BIN" "$BASH_BIN" -c '"$3" exec -i "$1" psql -v ON_ERROR_STOP=1 -U br_app -d br_wissen_restore < "$2"' _ "$DB_CONTAINER" "$latest_dump" "$DOCKER_BIN" >"$DB_LOG" 2>&1
+  "$DOCKER_BIN" exec "$DB_CONTAINER" psql -U br_app -d br_wissen_restore -Atc \
     "SELECT 'restore_sources=' || count(*) FROM sources; \
      SELECT 'restore_documents=' || count(*) FROM documents; \
      SELECT 'restore_chunks=' || count(*) FROM chunks; \
@@ -299,7 +318,7 @@ if [[ "$RUN_DB_RESTORE" -eq 1 ]]; then
      SELECT 'restore_statements_without_citation=' || count(*) FROM answer_statements st WHERE NOT EXISTS (SELECT 1 FROM answer_citations cit WHERE cit.statement_id=st.id); \
      SELECT 'restore_vector_extension=' || count(*) FROM pg_extension WHERE extname='vector'; \
      SELECT 'restore_operational_indexes=' || count(*) FROM pg_indexes WHERE schemaname='public' AND indexname IN ('idx_sources_citation_status','idx_sources_last_checked','idx_documents_sha256','idx_chunks_document','idx_chunks_source_class','idx_answers_query','idx_answers_created_at','idx_answers_export_paths','idx_answer_statements_answer','idx_answer_citations_statement','idx_answer_citations_chunk','idx_answer_citations_source_class','idx_audit_log_action_created','idx_audit_log_object');"
-  docker inspect "$DB_CONTAINER" --format 'restore_network_mode={{.HostConfig.NetworkMode}} restore_ports={{json .NetworkSettings.Ports}}'
+  "$DOCKER_BIN" inspect "$DB_CONTAINER" --format 'restore_network_mode={{.HostConfig.NetworkMode}} restore_ports={{json .NetworkSettings.Ports}}'
   echo "db_restore_status=ok"
 fi
 

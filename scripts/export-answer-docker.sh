@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT="/home/chris/web/br.m11h.eu"
+DOCKER_BIN="/usr/bin/docker"
 
 if [[ $# -ne 1 ]]; then
   echo "Usage: export-answer-docker.sh <answer_uid>" >&2
@@ -9,4 +10,4 @@ if [[ $# -ne 1 ]]; then
 fi
 
 cd "$ROOT"
-docker compose exec -T app python - "$1" < scripts/export-answer.py
+"$DOCKER_BIN" compose exec -T app python - "$1" < scripts/export-answer.py

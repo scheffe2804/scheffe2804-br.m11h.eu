@@ -30,17 +30,26 @@ M00H_LITERALS = [
     "SRC_PATH=\"${BR_M00H_SOURCE_PATH:-/srv/tailshare/Betriebsrat/}\"",
     "DEST_ROOT=\"${BR_STORAGE_ROOT:-/srv/br-wissensdatenbank}\"",
     "DEST_PATH=\"${DEST_ROOT}/imports/m00h/\"",
+    "DATE_BIN=\"/usr/bin/date\"",
+    "MKDIR_BIN=\"/usr/bin/mkdir\"",
+    "CHMOD_BIN=\"/usr/bin/chmod\"",
+    "RSYNC_BIN=\"/usr/bin/rsync\"",
+    "FIND_BIN=\"/usr/bin/find\"",
+    "SORT_BIN=\"/usr/bin/sort\"",
+    "XARGS_BIN=\"/usr/bin/xargs\"",
+    "SHA256SUM_BIN=\"/usr/bin/sha256sum\"",
+    "TEE_BIN=\"/usr/bin/tee\"",
     "LOG_FILE=\"${LOG_DIR}/import-m00h-${STAMP}.log\"",
-    "mkdir -p \"$DEST_PATH\" \"$LOG_DIR\"",
-    "chmod 750 \"$DEST_ROOT\" \"$DEST_PATH\" \"$LOG_DIR\"",
+    "\"$MKDIR_BIN\" -p \"$DEST_PATH\" \"$LOG_DIR\"",
+    "\"$CHMOD_BIN\" 750 \"$DEST_ROOT\" \"$DEST_PATH\" \"$LOG_DIR\"",
     "mode=${1:-sync}",
     "if [[ \"${1:-sync}\" == \"dry-run\" ]]; then",
-    "rsync -azn --delete --itemize-changes --protect-args",
-    "rsync -az --delete --itemize-changes --protect-args",
+    "\"$RSYNC_BIN\" -azn --delete --itemize-changes --protect-args",
+    "\"$RSYNC_BIN\" -az --delete --itemize-changes --protect-args",
     "echo \"# sha256\"",
-    "find \"$DEST_PATH\" -type f -print0 | sort -z | xargs -0 sha256sum",
-    "} | tee \"$LOG_FILE\"",
-    "chmod 640 \"$LOG_FILE\"",
+    "\"$FIND_BIN\" \"$DEST_PATH\" -type f -print0 | \"$SORT_BIN\" -z | \"$XARGS_BIN\" -0 \"$SHA256SUM_BIN\"",
+    "} | \"$TEE_BIN\" \"$LOG_FILE\"",
+    "\"$CHMOD_BIN\" 640 \"$LOG_FILE\"",
 ]
 
 
@@ -48,8 +57,9 @@ BAG_WRAPPER_LITERALS = [
     "set -euo pipefail",
     "ROOT=\"/home/chris/web/br.m11h.eu\"",
     "LIMIT=\"${1:-25}\"",
+    "DOCKER_BIN=\"/usr/bin/docker\"",
     "cd \"$ROOT\"",
-    "docker compose exec -T app python - \"$LIMIT\" < scripts/import-bag-feed.py",
+    "\"$DOCKER_BIN\" compose exec -T app python - \"$LIMIT\" < scripts/import-bag-feed.py",
 ]
 
 
@@ -193,7 +203,7 @@ def main() -> int:
     if m00h_text.find("rsync -azn") > m00h_text.find("rsync -az --delete"):
         findings.append("m00h_dry_run_not_before_sync")
     checks += 1
-    if m00h_text.find("echo \"# sha256\"") > m00h_text.find("chmod 640 \"$LOG_FILE\""):
+    if m00h_text.find("echo \"# sha256\"") > m00h_text.find("\"$CHMOD_BIN\" 640 \"$LOG_FILE\""):
         findings.append("m00h_checksum_after_log_chmod")
     checks += 1
     if bag_importer_text.find("html_path.write_bytes") > bag_importer_text.find("html_path.chmod(0o640)"):

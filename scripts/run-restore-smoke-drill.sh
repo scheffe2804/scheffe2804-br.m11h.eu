@@ -8,8 +8,17 @@ set -euo pipefail
 
 ROOT="${BR_STORAGE_ROOT:-/srv/br-wissensdatenbank}"
 APP_DIR="${BR_APP_DIR:-/home/chris/web/br.m11h.eu}"
+DATE_BIN="/usr/bin/date"
+MKDIR_BIN="/usr/bin/mkdir"
+TOUCH_BIN="/usr/bin/touch"
+CHMOD_BIN="/usr/bin/chmod"
+FIND_BIN="/usr/bin/find"
+SORT_BIN="/usr/bin/sort"
+AWK_BIN="/usr/bin/awk"
+RM_BIN="/usr/bin/rm"
+TEE_BIN="/usr/bin/tee"
 LOG_DIR="${ROOT}/logs"
-STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
+STAMP="$($DATE_BIN -u +%Y%m%dT%H%M%SZ)"
 LOG_FILE="${LOG_DIR}/restore-smoke-${STAMP}.log"
 SNAPSHOT="${BR_RESTORE_SMOKE_SNAPSHOT:-latest}"
 RESTORE_LOG_KEEP="${BR_RESTORE_LOG_KEEP:-20}"
@@ -21,9 +30,9 @@ if ! [[ "$RESTORE_LOG_KEEP" =~ ^[0-9]+$ ]] || [[ "$RESTORE_LOG_KEEP" -lt 1 ]]; t
 fi
 
 umask 027
-mkdir -p "$LOG_DIR"
-touch "$LOG_FILE"
-chmod 640 "$LOG_FILE"
+"$MKDIR_BIN" -p "$LOG_DIR"
+"$TOUCH_BIN" "$LOG_FILE"
+"$CHMOD_BIN" 640 "$LOG_FILE"
 
 {
   echo "# BR-Wissen Restore Smoke Drill"
@@ -34,14 +43,14 @@ chmod 640 "$LOG_FILE"
   "${APP_DIR}/scripts/check-storage-capacity.py" --summary
   "${APP_DIR}/scripts/restore-smoke-br-wissen.sh" --snapshot "$SNAPSHOT" --db
   echo "restore_log_keep=${RESTORE_LOG_KEEP}"
-  mapfile -t old_logs < <(find "$LOG_DIR" -maxdepth 1 -type f -name 'restore-smoke-*.log' -printf '%T@ %p\n' | sort -rn | awk -v keep="$RESTORE_LOG_KEEP" 'NR>keep {sub(/^[^ ]+ /, ""); print}')
+  mapfile -t old_logs < <("$FIND_BIN" "$LOG_DIR" -maxdepth 1 -type f -name 'restore-smoke-*.log' -printf '%T@ %p\n' | "$SORT_BIN" -rn | "$AWK_BIN" -v keep="$RESTORE_LOG_KEEP" 'NR>keep {sub(/^[^ ]+ /, ""); print}')
   if [[ "${#old_logs[@]}" -gt 0 ]]; then
     printf 'removing_old_restore_logs=%d\n' "${#old_logs[@]}"
-    rm -f -- "${old_logs[@]}"
+    "$RM_BIN" -f -- "${old_logs[@]}"
   else
     echo "removing_old_restore_logs=0"
   fi
   echo "restore_drill_status=ok"
-} | tee "$LOG_FILE"
+} | "$TEE_BIN" "$LOG_FILE"
 
-chmod 640 "$LOG_FILE"
+"$CHMOD_BIN" 640 "$LOG_FILE"

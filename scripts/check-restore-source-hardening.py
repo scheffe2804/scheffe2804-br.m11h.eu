@@ -30,14 +30,20 @@ WRAPPER_LITERALS = [
     "RESTORE_LOG_KEEP=\"${BR_RESTORE_LOG_KEEP:-20}\"",
     "restore_drill_status=invalid_restore_log_keep",
     "umask 027",
-    "chmod 640 \"$LOG_FILE\"",
+    "CHMOD_BIN=\"/usr/bin/chmod\"",
+    "FIND_BIN=\"/usr/bin/find\"",
+    "SORT_BIN=\"/usr/bin/sort\"",
+    "AWK_BIN=\"/usr/bin/awk\"",
+    "RM_BIN=\"/usr/bin/rm\"",
+    "TEE_BIN=\"/usr/bin/tee\"",
+    "\"$CHMOD_BIN\" 640 \"$LOG_FILE\"",
     "storage_capacity_preflight=running",
     "${APP_DIR}/scripts/check-storage-capacity.py\" --summary",
     "${APP_DIR}/scripts/restore-smoke-br-wissen.sh\" --snapshot \"$SNAPSHOT\" --db",
-    "find \"$LOG_DIR\" -maxdepth 1 -type f -name 'restore-smoke-*.log'",
-    "rm -f -- \"${old_logs[@]}\"",
+    "\"$FIND_BIN\" \"$LOG_DIR\" -maxdepth 1 -type f -name 'restore-smoke-*.log'",
+    "\"$RM_BIN\" -f -- \"${old_logs[@]}\"",
     "restore_drill_status=ok",
-    "} | tee \"$LOG_FILE\"",
+    "} | \"$TEE_BIN\" \"$LOG_FILE\"",
 ]
 
 
@@ -51,6 +57,24 @@ RESTORE_LITERALS = [
     "DB_VOLUME=\"br_wissen_restore_smoke_pgdata_${STAMP}\"",
     "DB_LOG=\"/tmp/br-wissen-restore-smoke-db-${STAMP}.log\"",
     "SQL_READY_WAIT=\"${BR_RESTORE_SQL_READY_WAIT:-15}\"",
+    "DOCKER_BIN=\"/usr/bin/docker\"",
+    "GREP_BIN=\"/usr/bin/grep\"",
+    "RM_BIN=\"/usr/bin/rm\"",
+    "SUDO_BIN=\"/usr/bin/sudo\"",
+    "TEST_BIN=\"/usr/bin/test\"",
+    "BASH_BIN=\"/usr/bin/bash\"",
+    "RESTIC_BIN=\"/usr/bin/restic\"",
+    "PYTHON_BIN=\"/usr/bin/python3.13\"",
+    "FIND_BIN=\"/usr/bin/find\"",
+    "WC_BIN=\"/usr/bin/wc\"",
+    "TR_BIN=\"/usr/bin/tr\"",
+    "STAT_BIN=\"/usr/bin/stat\"",
+    "SORT_BIN=\"/usr/bin/sort\"",
+    "AWK_BIN=\"/usr/bin/awk\"",
+    "BASENAME_BIN=\"/usr/bin/basename\"",
+    "SLEEP_BIN=\"/usr/bin/sleep\"",
+    "SEQ_BIN=\"/usr/bin/seq\"",
+    "PRINTF_BIN=\"/usr/bin/printf\"",
     "restore_status=invalid_snapshot",
     "restore_status=unsafe_target",
     "restore_status=missing_backup_env",
@@ -58,14 +82,14 @@ RESTORE_LITERALS = [
     "restore_status=target_exists",
     "restore_status=invalid_sql_ready_wait",
     "restore_sql_ready_wait=$SQL_READY_WAIT",
-    "restic snapshots \"$2\" --host m11h --tag br-wissen --json",
+    "\"$3\" snapshots \"$2\" --host m11h --tag br-wissen --json",
     "restore_resolved_snapshot=$resolved_snapshot",
-    "docker rm -f \"$DB_CONTAINER\"",
-    "docker volume rm \"$DB_VOLUME\"",
-    "rm -f -- \"$DB_LOG\"",
-    "sudo rm -rf -- \"$TARGET\"",
-    "/tmp/br-wissen-restore-*) sudo rm -rf -- \"$TARGET\" ;;",
-    "sudo bash -c 'set -euo pipefail; set -a; source \"$1\"; set +a; restic restore \"$2\" --host m11h --tag br-wissen --target \"$3\"'",
+    "\"$DOCKER_BIN\" rm -f \"$DB_CONTAINER\"",
+    "\"$DOCKER_BIN\" volume rm \"$DB_VOLUME\"",
+    "\"$RM_BIN\" -f -- \"$DB_LOG\"",
+    "\"$SUDO_BIN\" \"$RM_BIN\" -rf -- \"$TARGET\"",
+    "/tmp/br-wissen-restore-*) \"$SUDO_BIN\" \"$RM_BIN\" -rf -- \"$TARGET\" ;;",
+    "\"$SUDO_BIN\" \"$BASH_BIN\" -c 'set -euo pipefail; set -a; source \"$1\"; set +a; \"$4\" restore \"$2\" --host m11h --tag br-wissen --target \"$3\"'",
     "required_files=(",
     "restore_artifact_findings=",
     "restore_protocol_markers=yes",
@@ -73,7 +97,7 @@ RESTORE_LITERALS = [
     "restore_latest_dump=$dump_name",
     "restore_latest_dump_size=$dump_size",
     "dump_marker_",
-    "docker run -d --name \"$DB_CONTAINER\" --network none",
+    "\"$DOCKER_BIN\" run -d --name \"$DB_CONTAINER\" --network none",
     "POSTGRES_PASSWORD=restore_test_password",
     "psql -v ON_ERROR_STOP=1",
     "restore_network_mode={{.HostConfig.NetworkMode}} restore_ports={{json .NetworkSettings.Ports}}",
@@ -148,7 +172,7 @@ def main() -> int:
         findings.append("restore_target_prefix_guard_missing")
 
     checks += 1
-    if restore_text.find('restore_status=unsafe_target') > restore_text.find('sudo rm -rf -- "$TARGET"'):
+    if restore_text.find('restore_status=unsafe_target') > restore_text.find('"$SUDO_BIN" "$RM_BIN" -rf -- "$TARGET"'):
         findings.append("restore_unsafe_target_guard_after_cleanup")
 
     checks += 1
@@ -160,7 +184,7 @@ def main() -> int:
         findings.append("restore_db_network_isolation_missing")
 
     checks += 1
-    if "docker inspect \"$DB_CONTAINER\"" not in restore_text:
+    if '"$DOCKER_BIN" inspect "$DB_CONTAINER"' not in restore_text:
         findings.append("restore_db_network_metadata_missing")
 
     for required_file in EXPECTED_REQUIRED_FILES:

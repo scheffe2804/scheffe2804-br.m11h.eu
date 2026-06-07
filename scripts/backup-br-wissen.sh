@@ -7,7 +7,17 @@ set -euo pipefail
 
 ROOT="${BR_STORAGE_ROOT:-/srv/br-wissensdatenbank}"
 PROJECT="br-wissensdatenbank"
-STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
+DATE_BIN="/usr/bin/date"
+MKDIR_BIN="/usr/bin/mkdir"
+TOUCH_BIN="/usr/bin/touch"
+CHMOD_BIN="/usr/bin/chmod"
+DOCKER_BIN="/usr/bin/docker"
+FIND_BIN="/usr/bin/find"
+SORT_BIN="/usr/bin/sort"
+AWK_BIN="/usr/bin/awk"
+RM_BIN="/usr/bin/rm"
+TEE_BIN="/usr/bin/tee"
+STAMP="$($DATE_BIN -u +%Y%m%dT%H%M%SZ)"
 LOG_DIR="${ROOT}/logs"
 LOG_FILE="${LOG_DIR}/backup-${STAMP}.log"
 BACKUP_ENV="${BR_BACKUP_ENV:-/etc/web-backup/repos.d/m11h-br-wissen.env}"
@@ -31,9 +41,9 @@ run_preflight() {
 }
 
 umask 027
-mkdir -p "$LOG_DIR" "$BACKUP_DIR"
-touch "$LOG_FILE"
-chmod 640 "$LOG_FILE"
+"$MKDIR_BIN" -p "$LOG_DIR" "$BACKUP_DIR"
+"$TOUCH_BIN" "$LOG_FILE"
+"$CHMOD_BIN" 640 "$LOG_FILE"
 
 {
   echo "# BR Wissensdatenbank Backup"
@@ -149,13 +159,13 @@ chmod 640 "$LOG_FILE"
   run_preflight regression_source_hardening "${APP_DIR}/scripts/check-regression-source-hardening.py" --summary
   echo "backup_env=${BACKUP_ENV}"
   echo "creating_db_dump=${DB_DUMP}"
-  docker compose -f "${APP_DIR}/docker-compose.yml" exec -T db pg_dump -U br_app -d br_wissen > "$DB_DUMP"
-  chmod 640 "$DB_DUMP"
+  "$DOCKER_BIN" compose -f "${APP_DIR}/docker-compose.yml" exec -T db pg_dump -U br_app -d br_wissen > "$DB_DUMP"
+  "$CHMOD_BIN" 640 "$DB_DUMP"
   echo "local_dump_keep=${LOCAL_DUMP_KEEP}"
-  mapfile -t old_dumps < <(find "$BACKUP_DIR" -maxdepth 1 -type f -name 'postgres-*.sql' -printf '%T@ %p\n' | sort -rn | awk -v keep="$LOCAL_DUMP_KEEP" 'NR>keep {sub(/^[^ ]+ /, ""); print}')
+  mapfile -t old_dumps < <("$FIND_BIN" "$BACKUP_DIR" -maxdepth 1 -type f -name 'postgres-*.sql' -printf '%T@ %p\n' | "$SORT_BIN" -rn | "$AWK_BIN" -v keep="$LOCAL_DUMP_KEEP" 'NR>keep {sub(/^[^ ]+ /, ""); print}')
   if [[ "${#old_dumps[@]}" -gt 0 ]]; then
     printf 'removing_old_local_dumps=%d\n' "${#old_dumps[@]}"
-    rm -f -- "${old_dumps[@]}"
+    "$RM_BIN" -f -- "${old_dumps[@]}"
   else
     echo "removing_old_local_dumps=0"
   fi
@@ -166,14 +176,14 @@ chmod 640 "$LOG_FILE"
   "$RESTIC_BIN" backup --host m11h --tag br-wissen --tag includes-internal-sources "$APP_DIR" "$ROOT" "$PROTOCOL_FILE"
   "$RESTIC_BIN" forget --host m11h --tag br-wissen --keep-last 20 --keep-daily 14 --keep-weekly 8 --keep-monthly 6 --prune
   echo "backup_log_keep=${BACKUP_LOG_KEEP}"
-  mapfile -t old_logs < <(find "$LOG_DIR" -maxdepth 1 -type f -name 'backup-*.log' -printf '%T@ %p\n' | sort -rn | awk -v keep="$BACKUP_LOG_KEEP" 'NR>keep {sub(/^[^ ]+ /, ""); print}')
+  mapfile -t old_logs < <("$FIND_BIN" "$LOG_DIR" -maxdepth 1 -type f -name 'backup-*.log' -printf '%T@ %p\n' | "$SORT_BIN" -rn | "$AWK_BIN" -v keep="$BACKUP_LOG_KEEP" 'NR>keep {sub(/^[^ ]+ /, ""); print}')
   if [[ "${#old_logs[@]}" -gt 0 ]]; then
     printf 'removing_old_backup_logs=%d\n' "${#old_logs[@]}"
-    rm -f -- "${old_logs[@]}"
+    "$RM_BIN" -f -- "${old_logs[@]}"
   else
     echo "removing_old_backup_logs=0"
   fi
   echo "status=backup_done"
-} | tee "$LOG_FILE"
+} | "$TEE_BIN" "$LOG_FILE"
 
-chmod 640 "$LOG_FILE"
+"$CHMOD_BIN" 640 "$LOG_FILE"
