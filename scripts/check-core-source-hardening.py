@@ -134,7 +134,7 @@ PRIVILEGE_RISK_REVIEW_MARKERS: list[tuple[str, str]] = [
     ("broad_sudo", "broad_sudo"),
     ("accepted_risk", "accepted_risk"),
     ("critical_privilege_risk", "critical_privilege_risk"),
-    ("summary", "privilege_risk_review_status=%s checks=%d findings=%d target_user=%s critical_privilege_risk=%d broad_sudo=%d nopasswd_all=%d unrestricted_all=%d acceptance=%d least_privilege_followup=%d review_doc=%d review_cadence=monthly review_overdue=%d days_until_review=%d"),
+    ("summary", "privilege_risk_review_status=%s checks=%d findings=%d target_user=%s critical_privilege_risk=%d broad_sudo=%d nopasswd_all=%d unrestricted_all=%d acceptance=%d least_privilege_followup=%d review_doc=%d review_cadence=quarterly review_overdue=%d days_until_review=%d"),
     ("allow_accepted_risk", "--allow-accepted-risk"),
     ("accepted_risk_exit", "return 2"),
 ]

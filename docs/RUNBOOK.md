@@ -461,7 +461,7 @@ Privilege-Policy-Status mit der Risikoakzeptanz in
 Akzeptanz (`risk_acceptance_status=accepted`), einen Folgeauftrag
 (`least_privilege_followup=required`) und den Marker
 `sudoers_auto_change_allowed=0`. Zusaetzlich prueft er `last_review_date` und
-`next_review_due`, damit der monatliche Review nicht nur als Absicht, sondern als
+`next_review_due`, damit der vereinbarte Review-Zeitraum nicht nur als Absicht, sondern als
 faelliger Nachweis sichtbar bleibt. Er gibt keine sudoers-Inhalte, keine
 vollstaendigen Kommandolisten, keine Secrets, Dumps, Logs, Antworten oder
 Quelleninhalte aus und aendert keine sudoers-Konfiguration. Bei akzeptiertem

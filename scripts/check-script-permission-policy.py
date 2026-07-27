@@ -38,6 +38,7 @@ EXPECTED_SYSTEMD_FILES = {
 }
 EXPECTED_DOC_FILES = {
     "ARCHITECTURE.md",
+    "OFFICIAL-BASELINE.md",
     "PRIVILEGE-LEAST-PRIVILEGE-PLAN.md",
     "PRIVILEGE-NO-SUDOERS-CHANGE-POLICY.md",
     "PRIVILEGE-REMEDIATION-GATE.md",
@@ -54,6 +55,7 @@ NON_EXECUTABLE_SCRIPT_SOURCES = {
     "import-evg-member-downloads.py",
     "import-evg-public-sources.py",
     "import-gii-law.py",
+    "import-official-web-page.py",
     "repair-short-text-sources.py",
 }
 TOP_LEVEL_SOURCE_NAMES = {

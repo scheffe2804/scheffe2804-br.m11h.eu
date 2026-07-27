@@ -7,7 +7,7 @@ target_user=chris
 plan_status=planned
 plan_owner=chris
 plan_created=2026-06-06
-target_due=2026-07-06
+target_due=2026-10-27
 remediation_complete=0
 sudoers_auto_change_allowed=0
 requires_explicit_approval=1
@@ -59,7 +59,8 @@ produktiven sudoers-Aenderung muessen mindestens diese Schutzpunkte vorliegen:
 
 ## Faelligkeit
 
-Der Plan wurde am `2026-06-06` angelegt und ist bis spaetestens `2026-07-06` als
+Der Plan wurde am `2026-06-06` angelegt und ist nach erneuter ausdruecklicher
+Risikoakzeptanz bis spaetestens `2026-10-27` als
 eigener Least-Privilege-Haertungsblock zu reviewen oder umzusetzen. Wenn die
 Faelligkeit ueberschritten wird, muss der Plan-Guard failen, damit die
 Risikoakzeptanz nicht stillschweigend dauerhaft bleibt.

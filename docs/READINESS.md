@@ -288,7 +288,7 @@ Aktueller Guard-Stand laut read-only Status-/Summary-Pruefungen vom 2026-06-06:
 - Time-Sync-Guard: `time_sync_status=ok checks=8 findings=0 ntp=1 system_clock=-1 timezone=Europe/Berlin chrony_stratum=3 system_offset_s=0.000063 rms_offset_s=0.000075 leap_normal=1`.
 - Compose-Service-Guard: `compose_service_status=ok checks=9 findings=0 expected=5 running=5 health_required=2 healthy=2 unexpected=0`.
 - Privilege-Policy-Guard: `privilege_policy_status=ok checks=5 findings=0 target_user=chris command_entries=2 nopasswd_entries=1 password_entries=1 nopasswd_all=1 unrestricted_all=1 broad_sudo=1`.
-- Privilege-Risk-Review-Guard: `privilege_risk_review_status=accepted_risk checks=30 findings=0 target_user=chris critical_privilege_risk=1 broad_sudo=1 nopasswd_all=1 unrestricted_all=1 acceptance=1 least_privilege_followup=1 review_doc=1 review_cadence=monthly review_overdue=0`.
+- Privilege-Risk-Review-Guard: `privilege_risk_review_status=accepted_risk checks=30 findings=0 target_user=chris critical_privilege_risk=1 broad_sudo=1 nopasswd_all=1 unrestricted_all=1 acceptance=1 least_privilege_followup=1 review_doc=1 review_cadence=quarterly review_overdue=0`.
 - Privilege-Least-Privilege-Plan-Guard: `privilege_least_privilege_plan_status=planned checks=37 findings=0 target_user=chris plan_ready=1 remediation_complete=0 due_overdue=0 days_until_due=30 lockout_protection=1 rollback_plan=1 command_inventory=1 staged_rollout=1`.
 - Privilege-Remediation-Gate-Guard: `privilege_remediation_gate_status=closed checks=43 findings=0 target_user=chris remediation_allowed=0 actual_sudoers_change_allowed=0 remediation_complete=0 accepted_risk_visible=1 critical_privilege_risk=1 broad_sudo=1 plan_status=planned gate_doc=1`.
 - Privilege-No-Sudoers-Change-Guard: `privilege_no_sudoers_change_status=active checks=36 findings=0 target_user=chris sudoers_changes_allowed=0 sudoers_remediation_requested=0 actual_sudoers_change_allowed=0 remediation_complete=0 accepted_risk_continues=1 critical_privilege_risk=1 broad_sudo=1 gate_status=closed policy_doc=1`.
@@ -420,7 +420,7 @@ keine sudoers-Inhalte, keine vollstaendigen Kommandolisten, keine Secretwerte,
 keine Logs, keine Dumps, keine Antworttexte und keine Quelleninhalte aus und
 aendert keine sudoers-Konfiguration. Aktueller Stand:
 `privilege_risk_review_status=accepted_risk`, `critical_privilege_risk=1`,
-`acceptance=1`, `least_privilege_followup=1`, `review_cadence=monthly`,
+`acceptance=1`, `least_privilege_followup=1`, `review_cadence=quarterly`,
 `review_overdue=0`. Der Guard laeuft im
 normalen Statuscheck, im systemd-Healthcheck-Preflight und im Backup-Preflight.
 

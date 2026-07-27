@@ -7,6 +7,7 @@ Geschuetzte Betriebsrats-Wissensdatenbank auf `m11h`.
 - App/Compose/Code: `/home/chris/web/br.m11h.eu`
 - Sensible Quellen, Texte, Exporte, Logs: `/srv/br-wissensdatenbank`
 - Projektprotokoll: `/home/chris/web/diverses/betriebsrat.md`
+- Dokumentierter amtlicher Grundbestand: `docs/OFFICIAL-BASELINE.md`
 
 ## Betriebsbefehle
 
@@ -566,7 +567,7 @@ Privilege-Policy-Status mit der dokumentierten Risikoakzeptanz in
 `docs/PRIVILEGE-RISK-REVIEW.md`. Er bleibt nur gruen, wenn `broad_sudo=1`
 bewusst akzeptiert, `least_privilege_followup=required` dokumentiert und
 `sudoers_auto_change_allowed=0` gesetzt ist. Zusaetzlich prueft er
-`last_review_date` und `next_review_due`, damit der monatliche Review nicht nur
+`last_review_date` und `next_review_due`, damit der vereinbarte Review-Zeitraum nicht nur
 als Absicht, sondern als faelliger Nachweis sichtbar bleibt. Er gibt keine sudoers-Inhalte,
 keine vollstaendigen Kommandolisten, keine Secrets, Dumps, Logs, Antworttexte
 oder Quelleninhalte aus und aendert keine sudoers-Konfiguration. Bei akzeptiertem

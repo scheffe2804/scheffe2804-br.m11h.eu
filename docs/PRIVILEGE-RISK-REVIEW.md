@@ -1,13 +1,13 @@
 # Privilege Risk Review
 
-Stand: 2026-06-06T11:24:00Z
+Stand: 2026-07-27T09:33:56Z
 
 scope=br-wissen
 target_user=chris
 risk_acceptance_status=accepted
-review_cadence=monthly
-last_review_date=2026-06-06
-next_review_due=2026-07-06
+review_cadence=quarterly
+last_review_date=2026-07-27
+next_review_due=2026-10-27
 least_privilege_followup=required
 sudoers_auto_change_allowed=0
 no_sudoers_contents
@@ -40,8 +40,9 @@ keine Quelleninhalte.
   werden.
 - Bis dahin muss der Zustand regelmaessig erneut geprueft und im Projektprotokoll
   nachvollziehbar bleiben.
-- Der aktuelle Review ist am `2026-06-06` dokumentiert; der naechste Review ist
-  spaetestens am `2026-07-06` faellig.
+- Der aktuelle Review ist am `2026-07-27` nach ausdruecklicher Nutzerfreigabe
+  fuer drei Monate dokumentiert; der naechste Review ist spaetestens am
+  `2026-10-27` faellig.
 
 ## Keine automatische sudoers-Aenderung
 

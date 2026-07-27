@@ -26,7 +26,7 @@ REQUIRED_REVIEW_MARKERS = [
     "scope=br-wissen",
     "target_user=chris",
     "risk_acceptance_status=accepted",
-    "review_cadence=monthly",
+    "review_cadence=quarterly",
     "last_review_date=",
     "next_review_due=",
     "least_privilege_followup=required",
@@ -161,7 +161,7 @@ def main() -> int:
 
     critical_privilege_risk = 1 if (broad_sudo or nopasswd_all or unrestricted_all) else 0
     status = "accepted_risk" if critical_privilege_risk and not findings else ("ok" if not findings else "failed")
-    summary = "privilege_risk_review_status=%s checks=%d findings=%d target_user=%s critical_privilege_risk=%d broad_sudo=%d nopasswd_all=%d unrestricted_all=%d acceptance=%d least_privilege_followup=%d review_doc=%d review_cadence=monthly review_overdue=%d days_until_review=%d" % (
+    summary = "privilege_risk_review_status=%s checks=%d findings=%d target_user=%s critical_privilege_risk=%d broad_sudo=%d nopasswd_all=%d unrestricted_all=%d acceptance=%d least_privilege_followup=%d review_doc=%d review_cadence=quarterly review_overdue=%d days_until_review=%d" % (
         status,
         checks,
         len(findings),
