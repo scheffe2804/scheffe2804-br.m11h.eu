@@ -313,7 +313,7 @@ Aktueller Guard-Stand laut read-only Status-/Summary-Pruefungen vom 2026-06-06:
 - Access-Runtime-Source-Hardening: `access_runtime_source_hardening_status=ok`.
 - Runtime-HTTP-Security: `runtime_http_security_status=ok checks=24 findings=0 paths=2 unauthorized=2 header_checks=20 server_header_seen=0`.
 - External-Access-Surface: `external_access_surface_status=ok checks=88 findings=0 paths=8 protected=8 cf_access=8 basic_auth=0 redirects=0 cloudflare_server=8 set_cookie_paths=8`.
-- External-Cookie-Security: `external_cookie_security_status=ok checks=27 findings=0 paths=3 cookies=3 expected_names=3 secure=3 httponly=3 samesite=3 path_root=3 expiry=3 allowed_domain=3`.
+- External-Cookie-Security: Topologie-aware Cookie-/Fallback-Pruefung; bei m00h-/m11h-IP-Bypass wird `mode=server_bypass_fallback`, keine Cookies und ein vollstaendiger Caddy-Basic-Auth-`401`-Fallback auf allen drei Pfaden erwartet. Die externe Access-Sicht wird separat ausserhalb der Bypass-Server geprueft.
 - TLS-Certificate-Guard: `tls_certificate_status=ok checks=7 findings=0 host=br.m11h.eu port=443 tls=TLSv1.3 days_valid=54.9 san_match=1 issuer_present=1 cipher_present=1`.
 - App-Auth-Surface: `app_auth_surface_status=ok checks=21 findings=0 protected_gets=9 redirected=9 public_gets=2 public_ok=2 csrf_posts=6 csrf_blocked=6 post_successes=0 post_redirects=0`.
 - Runtime-Log-Marker: `runtime_log_marker_status=ok checks=5 markers=5 findings=0`.
@@ -783,21 +783,25 @@ read-only und sendet unauthentifizierte HTTPS-GET-Anfragen an zentrale Pfade unt
 `/answers`, `/search` und `/validation`. Er liest keine Antwortkoerper und gibt nur Status-/Header-
 Metadaten als Zaehler aus. Er akzeptiert den aktuellen Cloudflare-Access-
 Schutzpfad mit `cf-access-domain=br.m11h.eu` und Cloudflare-Metadaten oder, falls
-Cloudflare spaeter bis Caddy durchreicht, den Caddy-Basic-Auth-401-Pfad. Im
-aktuellen Live-Stand ist `cf_access=8` und `basic_auth=0`; Caddy-Basic-Auth wird
-weiterhin lokal ueber den Runtime-HTTP-Security-Guard validiert. Cookie-Inhalte,
+Cloudflare bis Caddy durchreicht, den Caddy-Basic-Auth-401-Pfad. Durch den festen
+m00h-/m11h-IP-Bypass ist der aktuelle lokale Stand `cf_access=0`, `basic_auth=8`,
+`protected=8` und `cloudflare_server=8`; eine externe Firecrawl-Negativprobe sah
+weiterhin die Cloudflare-Access-Anmeldeseite. Caddy-Basic-Auth wird zusaetzlich
+ueber den lokalen Runtime-HTTP-Security-Guard validiert. Cookie-Inhalte,
 Zugangsdaten, Secretwerte, Logs, Dumps, Antworttexte oder Quelleninhalte werden
 nicht gelesen oder ausgegeben.
 
 Der External-Cookie-Security-Guard `scripts/check-external-cookie-security.py` ist
 read-only und prueft unauthentifizierte HTTPS-Antworten fuer `/`, `/healthz` und
-`/login` nur auf `Set-Cookie`-Attribute. Cookie-Werte werden nie ausgegeben.
-Erwartet werden Cloudflare-Access-Cookies mit `Secure`, `HttpOnly`, gueltigem
-`SameSite`, `Path=/`, Ablauf (`Expires` oder `Max-Age`) und fehlender oder
-erwarteter Domain (`br.m11h.eu`, `.br.m11h.eu` oder `.m11h.eu`). `SameSite=None`
-ist in Kombination mit `Secure` fuer Cloudflare Access als gueltige Syntax-/
-Kompatibilitaetsvariante akzeptiert. Aktueller Stand: `cookies=3`, `secure=3`,
-`httponly=3`, `samesite=3`, `path_root=3`, `expiry=3`, `allowed_domain=3`.
+`/login` zweimodig. Sind Cloudflare-Access-Cookies sichtbar, bleiben Name,
+`Secure`, `HttpOnly`, gueltiges `SameSite`, `Path=/`, Ablauf und erlaubte Domain
+zwingend. Bei vollstaendig fehlenden Cookies muss dagegen auf allen drei Pfaden
+der Cloudflare-Servermarker plus vollstaendiger Caddy-Basic-Auth-`401`-Fallback
+samt Security-Headern vorliegen. Aktueller lokaler Stand:
+`external_cookie_security_status=ok`, `mode=server_bypass_fallback`, `paths=3`,
+`cookies=0`, `bypass_fallback=3`, `cloudflare_server=3`. Sechs deterministische,
+netzwerkfreie Tests pruefen beide Modi und zentrale Fehlerfaelle; die externe
+Negativprobe bestaetigt weiterhin die Cloudflare-Access-Anmeldeseite.
 Zugangsdaten, Secrets, Logs, Dumps, Antworttexte oder Quelleninhalte werden nicht
 gelesen oder ausgegeben.
 
@@ -1236,7 +1240,7 @@ Verschluesseltes Restic-Backup laut Backup-Freshness-Guard beim Doku-Abgleich vo
 - Letzter Network-Policy-Runtime-Env-Preflight: `network_policy_runtime_env_status=ok checks=158 findings=0 env_names=24 current_env_overrides=0 unit_overrides=0 project_references=93 installed_unit_references=0`.
 - Letzter Runtime-HTTP-Security-Preflight: `runtime_http_security_status=ok checks=24 findings=0 paths=2 unauthorized=2 header_checks=20 server_header_seen=0`.
 - Letzter External-Access-Surface-Preflight: `external_access_surface_status=ok checks=88 findings=0 paths=8 protected=8 cf_access=8 basic_auth=0 redirects=0 cloudflare_server=8 set_cookie_paths=8`.
-- Letzter External-Cookie-Security-Preflight: `external_cookie_security_status=ok checks=27 findings=0 paths=3 cookies=3 expected_names=3 secure=3 httponly=3 samesite=3 path_root=3 expiry=3 allowed_domain=3`.
+- Letzter External-Cookie-Security-Preflight: topologie-aware; Cookie-Attribute bleiben bei sichtbaren Cloudflare-Cookies zwingend, waehrend lokale m00h-/m11h-Proben im `server_bypass_fallback`-Modus drei vollstaendige Caddy-Basic-Auth-`401`-Fallbacks nachweisen muessen.
 - Letzter App-Auth-Surface-Preflight: `app_auth_surface_status=ok checks=21 findings=0 protected_gets=9 redirected=9 public_gets=2 public_ok=2 csrf_posts=6 csrf_blocked=6 post_successes=0 post_redirects=0`.
 - Letzter Backup-Preflight: `artifact_status=ok checks=8 findings=0`.
 - Letzter Image-Pinning-Preflight: `image_pinning_guard_status=ok refs=6 local_build=2 digest_pinned=4 violations=0`.

@@ -1015,15 +1015,26 @@ scripts/check-external-cookie-security.py --summary
 ```
 
 Der Guard ist read-only und ruft den oeffentlichen HTTPS-Pfad ohne Zugangsdaten
-fuer `/`, `/healthz` und `/login` ab. Er liest keine Antwortkoerper und prueft nur
-`Set-Cookie`-Attribute, ohne Cookie-Werte auszugeben. Erwartet werden Cloudflare-
-Access-Cookies mit `Secure`, `HttpOnly`, gueltigem `SameSite`-Attribut, `Path=/`,
-Ablauf (`Expires` oder `Max-Age`) und fehlender oder erwarteter Domain
-(`br.m11h.eu`, `.br.m11h.eu` oder `.m11h.eu`). `SameSite=None` wird nur zusammen
-mit `Secure` als gueltige Cloudflare-Access-Kompatibilitaetsvariante akzeptiert.
+fuer `/`, `/healthz` und `/login` ab. Er liest keine Antwortkoerper. Sind
+Cloudflare-Access-Cookies sichtbar, prueft er weiterhin zwingend `Secure`,
+`HttpOnly`, gueltiges `SameSite`, `Path=/`, Ablauf (`Expires` oder `Max-Age`) und
+fehlende oder erwartete Domain (`br.m11h.eu`, `.br.m11h.eu` oder `.m11h.eu`).
+`SameSite=None` wird nur zusammen mit `Secure` akzeptiert. Greift fuer die feste
+m00h-/m11h-Quell-IP dagegen der bewusst konfigurierte Access-Bypass, muessen auf
+allen drei Pfaden Cookies fehlen und jeder Pfad muss ueber Cloudflare den
+vollstaendigen Caddy-Basic-Auth-`401`-Fallback samt Security-Headern liefern.
+Gemischte Cookie-Sicht oder fehlender Fallback sind Fehler. Die externe
+Cloudflare-Access-Sicht wird zusaetzlich von einer Probe ausserhalb der beiden
+Bypass-Server validiert; der lokale Guard gibt seinen Modus explizit aus.
 Cookie-Werte, Zugangsdaten, Secrets, Logs, Dumps, Antworten oder Quelleninhalte
 werden nicht gelesen oder ausgegeben. Der Guard laeuft im normalen Statuscheck,
 im systemd-Healthcheck-Preflight und im Backup-Preflight.
+
+Die deterministischen, netzwerkfreien Modus-/Fehlerfalltests laufen mit:
+
+```bash
+/usr/bin/python3.13 scripts/test-external-cookie-security.py
+```
 
 ### TLS-Certificate-Guard pruefen
 

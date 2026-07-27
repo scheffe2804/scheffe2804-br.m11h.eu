@@ -57,6 +57,7 @@ NON_EXECUTABLE_SCRIPT_SOURCES = {
     "import-gii-law.py",
     "import-official-web-page.py",
     "repair-short-text-sources.py",
+    "test-external-cookie-security.py",
 }
 TOP_LEVEL_SOURCE_NAMES = {
     # Deliberately narrow source-only top-level scope. Runtime artifacts,

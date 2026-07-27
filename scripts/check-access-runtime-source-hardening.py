@@ -72,18 +72,18 @@ EXTERNAL_ACCESS_MARKERS: list[tuple[str, str]] = [
 
 
 EXTERNAL_COOKIE_MARKERS: list[tuple[str, str]] = [
-    ("docstring_no_values", "validates Set-Cookie attributes only. It never prints cookie values, never\nsends credentials and never reads HTTP response bodies"),
+    ("docstring_no_values", "validates Cloudflare Set-Cookie attributes when they are visible"),
     ("base_url", "BASE_URL = \"https://br.m11h.eu\""),
     ("expected_host", "EXPECTED_HOST = \"br.m11h.eu\""),
     ("paths", "PATHS = [\"/\", \"/healthz\", \"/login\"]"),
     ("timeout", "TIMEOUT_SECONDS = 15"),
     ("cookie_prefixes", "EXPECTED_COOKIE_NAME_PREFIXES = (\"CF_\", \"CF_ACCESS_\")"),
+    ("bypass_headers", "CADDY_BYPASS_HEADERS: dict[str, list[str]] = {"),
     ("user_agent", "br-wissen-external-cookie-security-guard"),
     ("set_cookie_only", "response.headers.get_all(\"Set-Cookie\") or []"),
     ("parse_cookie", "def parse_cookie(cookie: str)"),
     ("domain_allowed", "def domain_allowed(value: str) -> bool:"),
     ("allowed_domains", "return normalized in {EXPECTED_HOST, \".\" + EXPECTED_HOST, \".m11h.eu\"}"),
-    ("missing_cookie", "missing_set_cookie"),
     ("unexpected_name", "unexpected_cookie_name"),
     ("secure", "cookie_missing_secure"),
     ("httponly", "cookie_missing_httponly"),
@@ -91,7 +91,11 @@ EXTERNAL_COOKIE_MARKERS: list[tuple[str, str]] = [
     ("path_root", "cookie_path_not_root"),
     ("expiry", "cookie_missing_expiry"),
     ("domain", "cookie_domain_unexpected"),
-    ("summary", "external_cookie_security_status=%s checks=%d findings=%d paths=%d cookies=%d expected_names=%d secure=%d httponly=%d samesite=%d path_root=%d expiry=%d allowed_domain=%d"),
+    ("mixed_visibility", "mixed_cookie_visibility"),
+    ("bypass_mode", "bypass_mode = len(path_results) == len(PATHS) and paths_with_cookies == 0"),
+    ("fallback_check", "status == 401 and fallback_ok"),
+    ("cloudflare_server", 'if "cloudflare" in headers.get("server", "").lower():'),
+    ("summary", "external_cookie_security_status=%s checks=%d findings=%d mode=%s paths=%d cookies=%d expected_names=%d secure=%d httponly=%d samesite=%d path_root=%d expiry=%d allowed_domain=%d bypass_fallback=%d cloudflare_server=%d"),
 ]
 
 

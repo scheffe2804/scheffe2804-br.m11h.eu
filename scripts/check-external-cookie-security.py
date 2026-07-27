@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
-"""Read-only external cookie security guard for BR-Wissen.
+"""Read-only external cookie/fallback security guard for BR-Wissen.
 
 The guard performs unauthenticated HTTPS GET requests against the public hostname
-and validates Set-Cookie attributes only. It never prints cookie values, never
-sends credentials and never reads HTTP response bodies, application secrets,
-dumps, logs, answers or source documents.
+and validates Cloudflare Set-Cookie attributes when they are visible. If the
+fixed m00h/m11h Cloudflare Access IP bypass applies to the probe source, cookies
+must be absent on every path and the guard instead requires the complete Caddy
+Basic-Auth fallback and its security headers. It never prints cookie values,
+never sends credentials and never reads HTTP response bodies, application
+secrets, dumps, logs, answers or source documents.
 """
 
 from __future__ import annotations
@@ -20,21 +23,32 @@ EXPECTED_HOST = "br.m11h.eu"
 PATHS = ["/", "/healthz", "/login"]
 TIMEOUT_SECONDS = 15
 EXPECTED_COOKIE_NAME_PREFIXES = ("CF_", "CF_ACCESS_")
+CADDY_BYPASS_HEADERS: dict[str, list[str]] = {
+    "www-authenticate": ["basic"],
+    "x-robots-tag": ["noindex", "nofollow", "noarchive"],
+    "cache-control": ["no-store"],
+    "content-security-policy": ["frame-ancestors 'none'"],
+    "referrer-policy": ["no-referrer"],
+    "x-frame-options": ["deny"],
+    "x-content-type-options": ["nosniff"],
+}
 
 
-def fetch_cookie_headers(path: str) -> tuple[int, list[str]]:
+def fetch_cookie_headers(path: str) -> tuple[int, list[str], dict[str, str]]:
     request = Request(BASE_URL + path, method="GET", headers={"User-Agent": "br-wissen-external-cookie-security-guard"})
     try:
         response: HTTPResponse = urlopen(request, timeout=TIMEOUT_SECONDS)  # nosec B310 - fixed operational HTTPS target
         status = int(response.status)
         cookies = response.headers.get_all("Set-Cookie") or []
+        headers = {key.lower(): value for key, value in response.headers.items()}
         response.close()
-        return status, cookies
+        return status, cookies, headers
     except HTTPError as exc:
         cookies = exc.headers.get_all("Set-Cookie") or []
-        return int(exc.code), cookies
+        headers = {key.lower(): value for key, value in exc.headers.items()}
+        return int(exc.code), cookies, headers
     except URLError:
-        return 0, []
+        return 0, [], {}
 
 
 def parse_cookie(cookie: str) -> tuple[str, dict[str, str], set[str]]:
@@ -58,6 +72,20 @@ def domain_allowed(value: str) -> bool:
     return normalized in {EXPECTED_HOST, "." + EXPECTED_HOST, ".m11h.eu"}
 
 
+def has_header_values(headers: dict[str, str], required: dict[str, list[str]]) -> tuple[bool, int]:
+    checks = 0
+    for header, values in required.items():
+        checks += 1
+        value = headers.get(header, "")
+        if not value:
+            return False, checks
+        lowered = value.lower()
+        for required_value in values:
+            if required_value.lower() not in lowered:
+                return False, checks
+    return True, checks
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Check BR-Wissen external cookie security attributes")
     parser.add_argument("--summary", action="store_true", help="print compact summary")
@@ -74,18 +102,41 @@ def main() -> int:
     expiry_count = 0
     expected_name_count = 0
     allowed_domain_count = 0
+    bypass_fallback_count = 0
+    cloudflare_server_count = 0
+    path_results: list[tuple[str, int, list[str], dict[str, str]]] = []
 
     for path in PATHS:
-        status, cookies = fetch_cookie_headers(path)
+        status, cookies, headers = fetch_cookie_headers(path)
         label = path.strip("/") or "root"
         checked_paths += 1
         checks += 1
         if status == 0:
             findings.append("path_%s_unreachable" % label)
             continue
+        path_results.append((label, status, cookies, headers))
+
+    paths_with_cookies = sum(1 for _, _, cookies, _ in path_results if cookies)
+    checks += 1
+    if paths_with_cookies not in {0, len(PATHS)}:
+        findings.append("mixed_cookie_visibility")
+
+    bypass_mode = len(path_results) == len(PATHS) and paths_with_cookies == 0
+
+    for label, status, cookies, headers in path_results:
         checks += 1
-        if not cookies:
-            findings.append("path_%s_missing_set_cookie" % label)
+        if "cloudflare" in headers.get("server", "").lower():
+            cloudflare_server_count += 1
+        else:
+            findings.append("path_%s_missing_cloudflare_server_marker" % label)
+
+        if bypass_mode:
+            fallback_ok, fallback_checks = has_header_values(headers, CADDY_BYPASS_HEADERS)
+            checks += fallback_checks + 1
+            if status == 401 and fallback_ok:
+                bypass_fallback_count += 1
+            else:
+                findings.append("path_%s_missing_basic_auth_fallback_status=%d" % (label, status))
             continue
 
         for cookie in cookies:
@@ -136,14 +187,20 @@ def main() -> int:
             else:
                 findings.append("path_%s_cookie_domain_unexpected" % label)
 
+    checks += 1
+    if bypass_mode and bypass_fallback_count != len(PATHS):
+        findings.append("incomplete_basic_auth_fallback")
+
+    mode = "server_bypass_fallback" if bypass_mode else "cloudflare_cookie"
     status_text = "ok" if not findings else "failed"
     if args.summary:
         print(
-            "external_cookie_security_status=%s checks=%d findings=%d paths=%d cookies=%d expected_names=%d secure=%d httponly=%d samesite=%d path_root=%d expiry=%d allowed_domain=%d"
+            "external_cookie_security_status=%s checks=%d findings=%d mode=%s paths=%d cookies=%d expected_names=%d secure=%d httponly=%d samesite=%d path_root=%d expiry=%d allowed_domain=%d bypass_fallback=%d cloudflare_server=%d"
             % (
                 status_text,
                 checks,
                 len(findings),
+                mode,
                 checked_paths,
                 cookie_count,
                 expected_name_count,
@@ -153,12 +210,15 @@ def main() -> int:
                 path_root_count,
                 expiry_count,
                 allowed_domain_count,
+                bypass_fallback_count,
+                cloudflare_server_count,
             )
         )
     else:
         print("external_cookie_security_status=%s" % status_text)
         print("checks=%d" % checks)
         print("findings=%d" % len(findings))
+        print("mode=%s" % mode)
         print("paths=%d" % checked_paths)
         print("cookies=%d" % cookie_count)
         print("expected_names=%d" % expected_name_count)
@@ -168,6 +228,8 @@ def main() -> int:
         print("path_root=%d" % path_root_count)
         print("expiry=%d" % expiry_count)
         print("allowed_domain=%d" % allowed_domain_count)
+        print("bypass_fallback=%d" % bypass_fallback_count)
+        print("cloudflare_server=%d" % cloudflare_server_count)
         for finding in findings:
             print("finding=%s" % finding)
 
