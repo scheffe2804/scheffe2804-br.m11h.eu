@@ -1948,8 +1948,8 @@ oder Antwortinhalte. Weil `restic check` einen exklusiven Repository-Lock nimmt
 und je nach Repository-Groesse laenger laufen kann, ist er bewusst kein Backup-
 Preflight und kein Standard-Healthcheck. Empfohlen ist er nach groesseren Backup-
 oder Restore-Haertungsbloecken, nach auffaelligen Restic-Fehlern oder als
-periodischer Wartungscheck. Letzter dokumentierter Lauf: `2026-06-06T06:25:14Z`,
-48 Snapshots geprueft, Ergebnis `no errors were found`.
+periodischer Wartungscheck. Letzter dokumentierter Lauf: `2026-07-27T09:36:58Z`,
+45 Snapshots geprueft, Ergebnis `no errors were found`.
 
 Der leichte Freshness-Guard fuer diesen Nachweis startet keinen `restic check`,
 nimmt keinen Repository-Lock und liest keine Backup-Env-Werte. Er prueft nur, ob

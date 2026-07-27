@@ -1,6 +1,6 @@
 # BR-Wissen Readiness-Dossier
 
-Stand: 2026-06-07T14:36:33Z
+Stand: 2026-07-27T09:36:58Z
 
 Dieses Dossier fasst den aktuellen Betriebs-, Sicherheits-, Backup-, Restore- und
 Regressionstand fuer `br.m11h.eu` zusammen. Es enthaelt bewusst keine Secretwerte,
@@ -289,7 +289,7 @@ Aktueller Guard-Stand laut read-only Status-/Summary-Pruefungen vom 2026-06-06:
 - Compose-Service-Guard: `compose_service_status=ok checks=9 findings=0 expected=5 running=5 health_required=2 healthy=2 unexpected=0`.
 - Privilege-Policy-Guard: `privilege_policy_status=ok checks=5 findings=0 target_user=chris command_entries=2 nopasswd_entries=1 password_entries=1 nopasswd_all=1 unrestricted_all=1 broad_sudo=1`.
 - Privilege-Risk-Review-Guard: `privilege_risk_review_status=accepted_risk checks=30 findings=0 target_user=chris critical_privilege_risk=1 broad_sudo=1 nopasswd_all=1 unrestricted_all=1 acceptance=1 least_privilege_followup=1 review_doc=1 review_cadence=quarterly review_overdue=0`.
-- Privilege-Least-Privilege-Plan-Guard: `privilege_least_privilege_plan_status=planned checks=37 findings=0 target_user=chris plan_ready=1 remediation_complete=0 due_overdue=0 days_until_due=30 lockout_protection=1 rollback_plan=1 command_inventory=1 staged_rollout=1`.
+- Privilege-Least-Privilege-Plan-Guard: `privilege_least_privilege_plan_status=planned checks=37 findings=0 target_user=chris plan_ready=1 remediation_complete=0 due_overdue=0 days_until_due=92 lockout_protection=1 rollback_plan=1 command_inventory=1 staged_rollout=1`.
 - Privilege-Remediation-Gate-Guard: `privilege_remediation_gate_status=closed checks=43 findings=0 target_user=chris remediation_allowed=0 actual_sudoers_change_allowed=0 remediation_complete=0 accepted_risk_visible=1 critical_privilege_risk=1 broad_sudo=1 plan_status=planned gate_doc=1`.
 - Privilege-No-Sudoers-Change-Guard: `privilege_no_sudoers_change_status=active checks=36 findings=0 target_user=chris sudoers_changes_allowed=0 sudoers_remediation_requested=0 actual_sudoers_change_allowed=0 remediation_complete=0 accepted_risk_continues=1 critical_privilege_risk=1 broad_sudo=1 gate_status=closed policy_doc=1`.
 - Core-Source-Hardening: `core_source_hardening_status=ok`.
@@ -1209,8 +1209,8 @@ Verschluesseltes Restic-Backup laut Backup-Freshness-Guard beim Doku-Abgleich vo
 
 - Beim Doku-Abgleich dokumentierter Snapshot: `2908e56d`.
 - Beim Doku-Abgleich dokumentierter Restic-Latest: `2908e56d`.
-- Letzter expliziter Restic-Repository-Integritaetscheck: `2026-06-06T06:25:14Z`,
-  `restic check`, 48 Snapshots geprueft, Ergebnis `no errors were found`.
+- Letzter expliziter Restic-Repository-Integritaetscheck: `2026-07-27T09:36:58Z`,
+  `restic check`, 45 Snapshots geprueft, Ergebnis `no errors were found`.
   Dieser Check ist wegen exklusivem Repository-Lock bewusst manueller bzw.
   periodischer Wartungscheck und kein Backup-Preflight.
 - Leichter Restic-Repository-Check-Freshness-Guard: `restic_repository_check_status=ok checks=10 findings=0 last_check=2026-06-06T06:25:14Z snapshots=48 documented_success=1 max_age_h=720.0 lock_preflight=0`. Dieser Guard startet keinen `restic check` und nimmt keinen Repository-Lock.
@@ -1282,7 +1282,7 @@ Restic-Repository-Check:
 
 - Manueller/periodischer Befehl:
   `sudo -n bash -lc 'set -euo pipefail; set -a; source /etc/web-backup/repos.d/m11h-br-wissen.env; set +a; restic check'`.
-- Letzter dokumentierter Lauf: `2026-06-06T06:25:14Z`, 48 Snapshots geprueft,
+- Letzter dokumentierter Lauf: `2026-07-27T09:36:58Z`, 45 Snapshots geprueft,
   Ergebnis `no errors were found`.
 - Bewusst nicht im Backup-Preflight oder Standard-Healthcheck, weil `restic check`
   einen exklusiven Repository-Lock nimmt und je nach Repository-Groesse laenger
