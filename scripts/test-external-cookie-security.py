@@ -18,6 +18,7 @@ from unittest.mock import patch
 
 
 GUARD_PATH = Path(__file__).with_name("check-external-cookie-security.py")
+sys.dont_write_bytecode = True
 SPEC = importlib.util.spec_from_file_location("external_cookie_security_guard", GUARD_PATH)
 if SPEC is None or SPEC.loader is None:
     raise RuntimeError("guard_import_failed")
